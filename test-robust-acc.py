@@ -101,8 +101,11 @@ def loadmodel(model_name, factor):
     print('==> Building model..')
     # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
     # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch87.pt'
-    ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/' + model_name +'/'
-    ckpt += 'model-wideres-epoch76.pt'
+    # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/' + model_name +'/'
+    # ckpt += 'model-wideres-epoch76.pt'
+
+    ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+           'AT/e0.031_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
     # net = WideResNet(depth=args.depth, widen_factor=args.widen_factor, dropRate=args.droprate).cuda()
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
     # net.load_state_dict(torch.load(path + ckpt))

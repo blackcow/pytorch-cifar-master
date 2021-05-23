@@ -1,5 +1,5 @@
 '''Train CIFAR10 with PyTorch
-load 模型 test 指标，进行 T-SNE 可视化
+load 模型 test 指标，对 adv example 进行 T-SNE 可视化
 TRADES 自己训练的模型
 需要手动调整 epsilon，更换模型和 adv example
 '''

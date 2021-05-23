@@ -30,7 +30,7 @@ parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
 parser.add_argument('--imlabel', default=5, type=int, help='Label of the remove part of training data')
 parser.add_argument('--dele', default=3, type=int, help='Label of the deleted training data')
 parser.add_argument('--percent', default=0.1, type=float, help='Percentage of deleted data')
-parser.add_argument('--gpu', default='2', type=str, help='GPUs id')
+parser.add_argument('--gpu', default='0, 1', type=str, help='GPUs id')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 args = parser.parse_args()
 print(args)
@@ -54,7 +54,7 @@ print('==> Preparing data..')
 transform_test = transforms.Compose([
     transforms.ToTensor(),
     # 对于 TRADES 注释掉
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
 # 改写后的 load data
@@ -76,37 +76,11 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
 
 # Model
 print('==> Building model..')
-# path = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/'
-# # net = VGG('VGG19')
-
-# # net = resnet.ResNet18()
-# # net = torch.nn.DataParallel(net).cuda()
-# # net = net.cuda()
-#
-# # ckpt = 'ckpt-alldata.pth'
-# # ckpt = 'ckpt_rmlabel1_percent0.2.pth'
-# # ckpt = 'ckpt_rmlabel1_percent0.9.pth'
-#
-# # ckpt = 'ckpt_rmlabel0_percent0.2.pth'
-# ckpt = 'ckpt_rmlabel0_percent0.9.pth'
-#
-# # label 3，5 受影响大
-# # ckpt = 'ckpt_rmlabel5_percent0.2.pth'
-# # ckpt = 'ckpt_rmlabel5_percent0.9.pth'
-#
-# # ckpt = 'ckpt_rmlabel3_percent0.2.pth'
-# # ckpt = 'ckpt_rmlabel3_percent0.9.pth'
-#
-# ckp_path = path + ckpt
-#
-# checkpoint = torch.load(ckp_path)
-# # checkpoint = torch.load(ckp_path,map_location='cuda:1')
-# net.load_state_dict(checkpoint['net'])
-# # net.load_state_dict(cp1)
-# net.eval()
-
 # path = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST'
-ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/e8.0_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
+# ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/e8.0_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
+ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+       'AT/e0.031_depth34_widen10_drop0.0/model-wideres-epoch75.pt'
+# ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch75.pt'
 # net = WideResNet().cuda()
 net = nn.DataParallel(WideResNet()).cuda()
 # net.load_state_dict(torch.load(path +'/model-wideres-epoch100.pt'))
@@ -121,15 +95,16 @@ def plot_embedding(data, label, title):
     data = (data - x_min) / (x_max - x_min)
 
     fig = plt.figure()
-    ax = plt.subplot(111)
+    # ax = plt.subplot(111)
     for i in range(data.shape[0]):
         plt.text(data[i, 0], data[i, 1], str(label[i]),
                  # color=plt.cm.Set1(label[i] / 10.),
                  color=plt.cm.Set3(label[i]),
-                 fontdict={'weight': 'bold', 'size': 9})
-    plt.xticks([])
-    plt.yticks([])
-    plt.title(title)
+                 fontdict={'weight': 'bold', 'size': 7})
+        plt.plot(data[i, 0], data[i, 1])
+    # plt.xticks([])
+    # plt.yticks([])
+    # plt.title(title)
     plt.show()
     return fig
 
