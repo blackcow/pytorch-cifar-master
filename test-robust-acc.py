@@ -100,12 +100,23 @@ def loadmodel(model_name, factor):
     # Model
     print('==> Building model..')
     # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
-    # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch87.pt'
-    # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/' + model_name +'/'
-    # ckpt += 'model-wideres-epoch76.pt'
+    # ST
+    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/ST' \
+    #        '/e0.031_depth34_widen10_drop0.0/'
 
+    # Fair ST
+    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+    #        'ST_fair_v2/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+    #        'ST_fair_v1_T0.8/e0.031_depth34_widen10_drop0.0/'
     ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-           'AT/e0.031_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
+           'ST_fair_v1_T0.8_L10/e0.031_depth34_widen10_drop0.0/'
+
+    # Fair AT
+    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+    #        'TRADES/e0.031_depth34_widen10_drop0.0/'
+    ckpt += 'model-wideres-epoch100.pt'
+
     # net = WideResNet(depth=args.depth, widen_factor=args.widen_factor, dropRate=args.droprate).cuda()
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
     # net.load_state_dict(torch.load(path + ckpt))
@@ -131,28 +142,8 @@ def loadmodel(model_name, factor):
 #     print(ckpt)
 #     return net
 
-# def loadmodel(model_name, factor):
-#     # Model
-#     print('==> Building model..')
-#     if model_name == 'densenet':
-#         ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/densenet' \
-#                '/AT/e0.031_depth34_widen10_drop0.0/model-wideres-epoch76.pt'
-#         net = DenseNet121()
-#     elif model_name == 'wideresnet':
-#         ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/' \
-#                '/AT/e0.031_depth34_widen10_drop0.0/model-wideres-epoch76.pt'
-#         net = WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])
-#     # net.load_state_dict(torch.load(ckpt))
-#     net = WideResNet(depth=52, widen_factor=10, dropRate=0.0)
-#     summary(net, torch.zeros((1, 3, 32, 32)))
-#     print(model_name)
-#     net.eval()
-#     print(ckpt)
-#     return net
-
 # PGD Attack
 def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args.step_size):
-# def _pgd_whitebox(model, X, y, epsilon=args.epsilon, num_steps=args.num_steps, step_size=args.step_size):
     _, out = model(X)
     err = (out.data.max(1)[1] != y.data).float().sum()
     X_pgd = Variable(X.data, requires_grad=True)
@@ -160,20 +151,20 @@ def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args
         random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
         X_pgd = Variable(X_pgd.data + random_noise, requires_grad=True)
 
-    for _ in range(num_steps):
-        opt = optim.SGD([X_pgd], lr=1e-3)
-        opt.zero_grad()
-        with torch.enable_grad():
-            loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
-        loss.backward()
-        eta = step_size * X_pgd.grad.data.sign()
-        X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
-        eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
-        X_pgd = Variable(X.data + eta, requires_grad=True)
-        X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
-    err_pgd = (model(X_pgd)[1].data.max(1)[1] != y.data).float().sum()
-    # print('err pgd (white-box): ', err_pgd)
-    return err, err_pgd
+    # for _ in range(num_steps):
+    #     opt = optim.SGD([X_pgd], lr=1e-3)
+    #     opt.zero_grad()
+    #     with torch.enable_grad():
+    #         loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
+    #     loss.backward()
+    #     eta = step_size * X_pgd.grad.data.sign()
+    #     X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
+    #     eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
+    #     X_pgd = Variable(X.data + eta, requires_grad=True)
+    #     X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
+    # err_pgd = (model(X_pgd)[1].data.max(1)[1] != y.data).float().sum()
+    # return err, err_pgd
+    return err, err
 
 # input: tensorboard, model, model_name
 def test(writer, net, model_name, epsilon):

@@ -43,26 +43,12 @@ start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
 # Data
 print('==> Preparing data..')
-# transform_train = transforms.Compose([
-#     transforms.RandomCrop(32, padding=4),
-#     transforms.RandomHorizontalFlip(),
-#     transforms.ToTensor(),
-#     # 对于 TRADES 注释掉
-#     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-# ])
 
 transform_test = transforms.Compose([
     transforms.ToTensor(),
     # 对于 TRADES 注释掉
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
-
-# 改写后的 load data
-# trainset = cifar10my2.CIFAR10MY(
-#     root='./data', train=True, download=True, transform=transform_train, args=args)
-# trainloader = torch.utils.data.DataLoader(
-#     trainset, batch_size=128, shuffle=True, num_workers=2)
-#     # trainset, batch_size=128, shuffle=False, num_workers=2)
 
 bs = 1000
 # bs = 100
@@ -77,9 +63,19 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
 # Model
 print('==> Building model..')
 # path = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST'
-# ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/e8.0_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
-ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-       'AT/e0.031_depth34_widen10_drop0.0/model-wideres-epoch75.pt'
+# AT
+ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT' \
+       '/e0.031_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
+# Fair ST 目录
+# ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+#        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
+# ckpt += 'model-wideres-epoch100.pt'
+
+# # Fair AT
+# ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+#        'TRADES/e0.031_depth34_widen10_drop0.0/'
+# ckpt += 'model-wideres-epoch100.pt'
+
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch75.pt'
 # net = WideResNet().cuda()
 net = nn.DataParallel(WideResNet()).cuda()

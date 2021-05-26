@@ -69,15 +69,8 @@ transform_test = transforms.Compose([
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-# 改写后的 load data
-# trainset = cifar10my2.CIFAR10MY(
-#     root='./data', train=True, download=True, transform=transform_train, args=args)
-# trainloader = torch.utils.data.DataLoader(
-#     trainset, batch_size=128, shuffle=True, num_workers=2)
-#     # trainset, batch_size=128, shuffle=False, num_workers=2)
-
-# bs = 1000
-bs = 50
+bs = 700
+# bs = 50
 testset = torchvision.datasets.CIFAR10(
     root='./data', train=False, download=True, transform=transform_test)
 testloader = torch.utils.data.DataLoader(
@@ -89,13 +82,27 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
 # Model
 print('==> Building model..')
 factors = [0.031, 0.0156, 0.0078, 0.0039]
-epsilon = factors[3]
+epsilon = factors[0]
 model_name = 'e' + str(epsilon) +'_depth34_widen10_drop0.0'
 # model_name = 'e0.0156_depth34_widen10_drop0.0'
 # model_name = 'e0.0078_depth34_widen10_drop0.0'
 # model_name = 'e0.0039_depth34_widen10_drop0.0'
-ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/' + model_name +'/'
-ckpt += 'model-wideres-epoch76.pt'
+# ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/' + model_name +'/'
+# ckpt += 'model-wideres-epoch76.pt'
+
+# AT
+# ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT' \
+#        '/e0.031_depth34_widen10_drop0.0/model-wideres-epoch76.pt'
+
+# # Fair AT
+ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+       'TRADES/e0.031_depth34_widen10_drop0.0/'
+ckpt += 'model-wideres-epoch100.pt'
+
+# ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+#        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
+# ckpt += 'model-wideres-epoch100.pt'
+
 net = nn.DataParallel(WideResNet()).cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
@@ -105,9 +112,8 @@ cudnn.benchmark = True
 
 # PGD Attack
 def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args.step_size):
-# def _pgd_whitebox(model, X, y, epsilon=args.epsilon, num_steps=args.num_steps, step_size=args.step_size):
     _, out = model(X)
-    err = (out.data.max(1)[1] != y.data).float().sum()
+    # err = (out.data.max(1)[1] != y.data).float().sum()
     X_pgd = Variable(X.data, requires_grad=True)
     if args.random:
         random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
