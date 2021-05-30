@@ -2,6 +2,7 @@
 调整 factor，测试各 epoch=76 的 model
 测试 benign acc 和 robust acc（在各个 label 下）
 绘制成图
+计算各 label 的特征中心，然后 label 特征中心的距离
 '''
 import torch
 import torch.nn as nn
@@ -73,7 +74,7 @@ transform_test = transforms.Compose([
 ])
 
 # bs = 20
-bs = 200
+bs = 1000
 testset = cifar10my3.CIFAR10MY(
     root='./data', train=False, download=True, transform=transform_test, args=args)
 testloader = torch.utils.data.DataLoader(
@@ -96,21 +97,24 @@ def seed_everything(seed):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
 
-def loadmodel(model_name, factor):
+def loadmodel(i, factor):
     # Model
+    ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     print('==> Building model..')
     # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
     # ST
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/ST' \
     #        '/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
+    # '/ST-ori/e0.031_depth34_widen10_drop0.0/'
 
     # Fair ST
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v2/e0.031_depth34_widen10_drop0.0/'
+    #        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v1_T0.8/e0.031_depth34_widen10_drop0.0/'
+    #        'ST_fair_v1_T0.005/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v1_T0.8_L10/e0.031_depth34_widen10_drop0.0/'
+    #        'ST_fair_v1_T0.8_L-10/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
     #        'ST_fair_v3_T0.1_L10/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
@@ -123,7 +127,8 @@ def loadmodel(model_name, factor):
     # Fair AT
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
     #        'TRADES/e0.031_depth34_widen10_drop0.0/'
-    ckpt += 'model-wideres-epoch75.pt'
+    ckpt += ckpt_list[i]
+
 
     # net = WideResNet(depth=args.depth, widen_factor=args.widen_factor, dropRate=args.droprate).cuda()
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
@@ -133,26 +138,11 @@ def loadmodel(model_name, factor):
     print(ckpt)
     return net
 
-# # 测试不同 model 的 fariness
-# def loadmodel(model_name, factor):
-#     # Model
-#     print('==> Building model..')
-#     if model_name == 'densenet':
-#         ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/densenet' \
-#                '/AT/e0.031_depth34_widen10_drop0.0/model-wideres-epoch76.pt'
-#         net = nn.DataParallel(DenseNet121()).cuda()
-#     elif model_name == 'wideresnet':
-#         ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/' \
-#                '/AT/e0.031_depth34_widen10_drop0.0/model-wideres-epoch76.pt'
-#         net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
-#     net.load_state_dict(torch.load(ckpt))
-#     net.eval()
-#     print(ckpt)
-#     return net
-
 # PGD Attack
 def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args.step_size):
-    _, out = model(X)
+    rep, out = model(X)
+    N, C, H, W = rep.size()
+    rep = rep.reshape([N, -1])
     err = (out.data.max(1)[1] != y.data).float().sum()
     X_pgd = Variable(X.data, requires_grad=True)
     if args.random:
@@ -172,7 +162,7 @@ def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args
     #     X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
     # err_pgd = (model(X_pgd)[1].data.max(1)[1] != y.data).float().sum()
     # return err, err_pgd
-    return err, err
+    return err, err, rep
 
 # input: tensorboard, model, model_name
 def test(writer, net, model_name, epsilon):
@@ -185,19 +175,22 @@ def test(writer, net, model_name, epsilon):
     count = 0
     robust_err_total_label = 0
     natural_err_total_label = 0
-
+    rep_label = torch.zeros([10, 40960]).cuda()
+    i = 0
     with torch.no_grad():
         for inputs, targets in testloader:
             inputs, targets = inputs.cuda(), targets.cuda()
 
             X, y = Variable(inputs, requires_grad=True), Variable(targets)
-            err_natural, err_robust = _pgd_whitebox(net, X, y, epsilon=epsilon)
+            err_natural, err_robust, rep = _pgd_whitebox(net, X, y, epsilon=epsilon)
             robust_err_total_label += err_robust
             natural_err_total_label += err_natural
 
             count = bs + count
             # 计算每个类别下的 err
             if count % 1000 == 0:
+                rep_label[i] = rep.mean(dim=0)
+                i = i + 1
                 label_index = count/1000-1
                 robust_acc = (1-robust_err_total_label/1000).cpu().numpy()
                 natural_acc = (1-natural_err_total_label/1000).cpu().numpy()
@@ -207,95 +200,42 @@ def test(writer, net, model_name, epsilon):
                 acc_natural_label.append(natural_acc)
                 robust_err_total_label = 0
                 natural_err_total_label = 0
-                # 各 label 下的 acc 绘图
-                graph_name = 'test/' + args.factors + '/robust_acc'
-                writer.add_scalars(graph_name, {model_name: robust_acc}, label_index)
-                graph_name = 'test/' + args.factors + '/benign_acc'
-                writer.add_scalars(graph_name, {model_name: natural_acc}, label_index)
 
     # 输出各 label 下的 acc
     print('acc_natural_label：')
     for i in acc_natural_label:
         print('{:3f}'.format(i))
 
-    print('acc_robust_label：')
-    for i in acc_robust_label:
-        print('{:3f}'.format(i))
-    return 0
+    # print('acc_robust_label：')
+    # for i in acc_robust_label:
+    #     print('{:3f}'.format(i))
+    # 各 label 的 Rep 中心归一化，计算余弦相似度
+    rep_norm = nn.functional.normalize(rep_label, dim=1)
+    logits = torch.mm(rep_norm, torch.transpose(rep_norm, 0, 1))  # [10,HW]*[HW,10]=[10,10]
+    logits = logits - torch.diag_embed(torch.diag(logits))  # 去掉对角线的 1
+    logits = logits.abs().sum().cpu().numpy()
+    print('Summation of the distance of each label rep: {:.2f}'.format(logits))
+    return logits
 
 def main():
     start = time()
-    seed = 1
     seed_everything(1)
     writer = SummaryWriter(comment='test_comment', filename_suffix="test_suffix")
     # load model
-    # model_name = 'e' + str(args.epsilon) + '_depth' + str(args.depth) + '_' + 'widen' + str(
-    #     args.widen_factor) + '_' + 'drop' + str(args.droprate)
     # 根据测试的 factor 选择对应的 model
     print('factors:', args.factors)
-    if args.factors == 'widen_factor':
-        factors = [4, 6, 8, 10, 12]
-        for i in factors:
-            model_name = 'e' + str(args.epsilon) + '_depth' + str(args.depth) + '_' + \
-                         'widen' + str(i) + '_' + 'drop' + str(args.droprate)
-            print("Test " + model_name)
-            factor = [args.epsilon, args.depth, i, args.droprate]
-            net = loadmodel(model_name, factor)
-            # test robust acc & benign acc
-            test(writer, net, model_name, factor[0])
-
-    elif args.factors == 'droprate':
-        factors = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-        for i in factors:
-            model_name = 'e' + str(args.epsilon) + '_depth' + str(args.depth) + '_' + \
-                         'widen' + str(args.widen_factor) + '_' + 'drop' + str(i)
-            print("Test " + model_name)
-            factor = [args.epsilon, args.depth, args.widen_factor, i]
-            net = loadmodel(model_name, factor)
-            # test robust acc & benign acc
-            test(writer, net, model_name, factor[0])
-
-    elif args.factors == 'depth':
-        factors = [28, 34, 40, 46]
-        for i in factors:
-            model_name = 'e' + str(args.epsilon) + '_depth' + str(i) + '_' + \
-                         'widen' + str(args.widen_factor) + '_' + 'drop' + str(args.droprate)
-            print("Test " + model_name)
-            factor = [args.epsilon, i, args.widen_factor, args.droprate]
-            net = loadmodel(model_name, factor)
-            # test robust acc & benign acc
-            test(writer, net, model_name, factor[0])
-    elif args.factors == 'epsilon':
-        factors = [0.031, 0.0156, 0.0078, 0.0039]
-        for i in factors:
-            model_name = 'e' + str(i) + '_depth' + str(args.depth) + '_' + \
-                         'widen' + str(args.widen_factor) + '_' + 'drop' + str(args.droprate)
-            print("Test " + model_name)
-            factor = [i, args.depth, args.widen_factor, args.droprate]
-            net = loadmodel(model_name, factor)
-            # test robust acc & benign acc
-            test(writer, net, model_name, factor[0])
-    elif args.factors == 'model':
-        # model_arch = ['densenet', 'wideresnet']
-        # model_arch = ['densenet']
+    logits=[0,0,0]
+    if args.factors == 'model':
         model_arch = ['wideresnet']
-        for i in model_arch:
-            print("Test " + i)
+        for i in range(3):
+            print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
             net = loadmodel(i, factor)
-            # test robust acc & benign acc
-            # test(writer, net, i, factor[0])
-    # elif 'net' in args.factors:
-    #     model_name = ''
-    #     print("Test " + model_name)
-    #     factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
-    #     net = loadmodel(model_name, factor)
-    #     # test robust acc & benign acc
-        test(writer, net, 'model_name', factor[0])
+            logits[i] = test(writer, net, 'model_name', factor[0])
     else:
         raise Exception('this should never happen')
-
-
+    for m in range(3):
+        print('%.2f' % logits[m])
     writer.close()
     end = time()
     print('时间:{:3f}'.format((end-start)/60))

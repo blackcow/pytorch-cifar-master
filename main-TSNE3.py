@@ -1,5 +1,6 @@
 '''Train CIFAR10 with PyTorch
 load 模型 test 指标，进行 T-SNE 可视化
+按照 label 获取 input data，然后计算特征中心
 '''
 import torch
 import torch.nn as nn
@@ -62,9 +63,7 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
 
 # Model
 print('==> Building model..')
-# ST
-ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
-    '/ST-ori/e0.031_depth34_widen10_drop0.0/'
+# path = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST'
 # AT
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT' \
 #        '/e0.031_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
@@ -72,10 +71,9 @@ ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
 # Fair ST 目录
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
 #        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
-# ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-#        'ST_fair_v1_T0.1/e0.031_depth34_widen10_drop0.0/'
-# ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-#        'ST_fair_v1_T0.8/e0.031_depth34_widen10_drop0.0/'
+ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
+       'ST_fair_v4_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+# ckpt += 'model-wideres-epoch100.pt'
 
 # # Fair AT
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
@@ -85,7 +83,6 @@ ckpt += 'model-wideres-epoch76.pt'
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch75.pt'
 # net = WideResNet().cuda()
 net = nn.DataParallel(WideResNet()).cuda()
-# net.load_state_dict(torch.load(path +'/model-wideres-epoch100.pt'))
 net.load_state_dict(torch.load(ckpt))
 net.eval()
 print(ckpt)
