@@ -62,9 +62,10 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
 
 # Model
 print('==> Building model..')
+path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
 # ST
-ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
-    '/ST-ori/e0.031_depth34_widen10_drop0.0/'
+# ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
+#     '/ST-ori/e0.031_depth34_widen10_drop0.0/'
 # AT
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT' \
 #        '/e0.031_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
@@ -80,7 +81,8 @@ ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
 # # Fair AT
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
 #        'TRADES/e0.031_depth34_widen10_drop0.0/'
-ckpt += 'model-wideres-epoch76.pt'
+ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+ckpt += 'model-wideres-epoch100.pt'
 
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch75.pt'
 # net = WideResNet().cuda()

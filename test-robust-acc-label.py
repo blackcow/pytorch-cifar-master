@@ -47,7 +47,7 @@ parser.add_argument('--widen_factor', type=int, default=10, metavar='N',
 parser.add_argument('--droprate', type=float, default=0.0, metavar='N',
                     help='model droprate (default: 0.0)')
 # draw imgs
-parser.add_argument('--factors', type=str, required=True, metavar='N',
+parser.add_argument('--factors', default='model', type=str, metavar='N',
                     choices=['widen_factor', 'depth', 'droprate', 'epsilon', 'model'],
                     help='tensorboard draw img factors')
 
@@ -101,6 +101,7 @@ def loadmodel(i, factor):
     # Model
     ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     print('==> Building model..')
+    path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
     # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
     # ST
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/ST' \
@@ -121,8 +122,8 @@ def loadmodel(i, factor):
     #        'ST_fair_v4_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
     #        'ST_fair_v3_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-           'ST_fair_v4_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+
+    ckpt = path + 'ST_fair_v1_T0.8_L1/e0.031_depth34_widen10_drop0.0/'
 
     # Fair AT
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
