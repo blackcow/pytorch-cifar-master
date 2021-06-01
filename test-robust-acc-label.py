@@ -123,12 +123,13 @@ def loadmodel(i, factor):
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
     #        'ST_fair_v3_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
 
-    ckpt = path + 'ST_fair_v1_T0.8_L1/e0.031_depth34_widen10_drop0.0/'
+    ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
 
     # Fair AT
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
     #        'TRADES/e0.031_depth34_widen10_drop0.0/'
     ckpt += ckpt_list[i]
+    # ckpt += 'model-wideres-epoch100.pt'
 
 
     # net = WideResNet(depth=args.depth, widen_factor=args.widen_factor, dropRate=args.droprate).cuda()
