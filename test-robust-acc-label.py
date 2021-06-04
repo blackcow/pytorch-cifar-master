@@ -73,8 +73,8 @@ transform_test = transforms.Compose([
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-# bs = 20
-bs = 1000
+bs = 20
+# bs = 1000
 testset = cifar10my3.CIFAR10MY(
     root='./data', train=False, download=True, transform=transform_test, args=args)
 testloader = torch.utils.data.DataLoader(
@@ -123,7 +123,8 @@ def loadmodel(i, factor):
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
     #        'ST_fair_v3_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
 
-    ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+    ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
 
     # Fair AT
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
@@ -151,20 +152,20 @@ def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args
         random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
         X_pgd = Variable(X_pgd.data + random_noise, requires_grad=True)
 
-    # for _ in range(num_steps):
-    #     opt = optim.SGD([X_pgd], lr=1e-3)
-    #     opt.zero_grad()
-    #     with torch.enable_grad():
-    #         loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
-    #     loss.backward()
-    #     eta = step_size * X_pgd.grad.data.sign()
-    #     X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
-    #     eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
-    #     X_pgd = Variable(X.data + eta, requires_grad=True)
-    #     X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
-    # err_pgd = (model(X_pgd)[1].data.max(1)[1] != y.data).float().sum()
-    # return err, err_pgd
-    return err, err, rep
+    for _ in range(num_steps):
+        opt = optim.SGD([X_pgd], lr=1e-3)
+        opt.zero_grad()
+        with torch.enable_grad():
+            loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
+        loss.backward()
+        eta = step_size * X_pgd.grad.data.sign()
+        X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
+        eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
+        X_pgd = Variable(X.data + eta, requires_grad=True)
+        X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
+    err_pgd = (model(X_pgd)[1].data.max(1)[1] != y.data).float().sum()
+    return err, err_pgd, rep
+    # return err, err, rep
 
 # input: tensorboard, model, model_name
 def test(writer, net, model_name, epsilon):
@@ -208,9 +209,10 @@ def test(writer, net, model_name, epsilon):
     for i in acc_natural_label:
         print('{:3f}'.format(i))
 
-    # print('acc_robust_label：')
-    # for i in acc_robust_label:
-    #     print('{:3f}'.format(i))
+    print('acc_robust_label：')
+    for i in acc_robust_label:
+        print('{:3f}'.format(i))
+
     # 各 label 的 Rep 中心归一化，计算余弦相似度
     rep_norm = nn.functional.normalize(rep_label, dim=1)
     logits = torch.mm(rep_norm, torch.transpose(rep_norm, 0, 1))  # [10,HW]*[HW,10]=[10,10]
