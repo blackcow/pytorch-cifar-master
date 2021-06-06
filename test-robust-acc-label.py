@@ -165,6 +165,7 @@ def loadmodel_robustfair(i, factor):
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
     net.load_state_dict(torch.load(ckpt))
     net.eval()
+
     print(ckpt)
     return net
 
