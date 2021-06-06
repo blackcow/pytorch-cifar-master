@@ -18,6 +18,7 @@ import argparse
 
 from models import *
 # from utils import progress_bar
+from network import create_network
 
 import cifar10my2
 import cifar10my3
@@ -33,7 +34,6 @@ from torch.autograd import Variable
 from time import time
 from torch.utils.tensorboard import SummaryWriter
 from torchsummaryX import summary
-
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
@@ -132,9 +132,23 @@ def loadmodel(i, factor):
     ckpt += ckpt_list[i]
     # ckpt += 'model-wideres-epoch100.pt'
 
-
     # net = WideResNet(depth=args.depth, widen_factor=args.widen_factor, dropRate=args.droprate).cuda()
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
+    # net.load_state_dict(torch.load(path + ckpt))
+    net.load_state_dict(torch.load(ckpt))
+    net.eval()
+    print(ckpt)
+    return net
+
+# Fair model from ICML 21
+def loadmodel_robustfair(i, factor):
+    # Model
+    ckpt_list = ['trade_120_1.0.pt']
+    print('==> Building model..')
+    ckpt = '../Robust-Fair/cifar10/models/'
+    ckpt += ckpt_list[i]
+    net = create_network().cuda()
+    # net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
     # net.load_state_dict(torch.load(path + ckpt))
     net.load_state_dict(torch.load(ckpt))
     net.eval()
@@ -163,8 +177,11 @@ def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args
         eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
         X_pgd = Variable(X.data + eta, requires_grad=True)
         X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
-    err_pgd = (model(X_pgd)[1].data.max(1)[1] != y.data).float().sum()
-    return err, err_pgd, rep
+    rep_pgd, out_pgd = model(X_pgd)
+    err_pgd = (out_pgd.data.max(1)[1] != y.data).float().sum()
+
+    rep_pgd = rep_pgd.reshape([N, -1])
+    return err, err_pgd, rep, rep_pgd
     # return err, err, rep
 
 # input: tensorboard, model, model_name
@@ -178,14 +195,19 @@ def test(writer, net, model_name, epsilon):
     count = 0
     robust_err_total_label = 0
     natural_err_total_label = 0
-    rep_label = torch.zeros([10, 40960]).cuda()
+    tmprep, _ = net(torch.zeros([20, 3, 32, 32]).cuda())
+    _, C, H, W = tmprep.size()
+    # center of the rep
+    rep_label = torch.zeros([10, C*H*W]).cuda()
+    rep_robust_label = torch.zeros([10, C*H*W]).cuda()
+
     i = 0
     with torch.no_grad():
         for inputs, targets in testloader:
             inputs, targets = inputs.cuda(), targets.cuda()
 
             X, y = Variable(inputs, requires_grad=True), Variable(targets)
-            err_natural, err_robust, rep = _pgd_whitebox(net, X, y, epsilon=epsilon)
+            err_natural, err_robust, rep, rep_pgd = _pgd_whitebox(net, X, y, epsilon=epsilon)
             robust_err_total_label += err_robust
             natural_err_total_label += err_natural
 
@@ -193,12 +215,11 @@ def test(writer, net, model_name, epsilon):
             # 计算每个类别下的 err
             if count % 1000 == 0:
                 rep_label[i] = rep.mean(dim=0)
+                rep_robust_label[i] = rep_pgd.mean(dim=0)
                 i = i + 1
                 label_index = count/1000-1
                 robust_acc = (1-robust_err_total_label/1000).cpu().numpy()
                 natural_acc = (1-natural_err_total_label/1000).cpu().numpy()
-                # print('robust_acc: {:3f}'.format(robust_acc))
-                # print('natural_acc: {:3f}'.format(natural_acc))
                 acc_robust_label.append(robust_acc)
                 acc_natural_label.append(natural_acc)
                 robust_err_total_label = 0
@@ -218,8 +239,15 @@ def test(writer, net, model_name, epsilon):
     logits = torch.mm(rep_norm, torch.transpose(rep_norm, 0, 1))  # [10,HW]*[HW,10]=[10,10]
     logits = logits - torch.diag_embed(torch.diag(logits))  # 去掉对角线的 1
     logits = logits.abs().sum().cpu().numpy()
-    print('Summation of the distance of each label rep: {:.2f}'.format(logits))
-    return logits
+    print('Sum distance of each label rep: {:.2f}'.format(logits))
+
+    rep_robust = nn.functional.normalize(rep_robust_label, dim=1)
+    logits_robust = torch.mm(rep_robust, torch.transpose(rep_robust, 0, 1))  # [10,HW]*[HW,10]=[10,10]
+    logits_robust = logits_robust - torch.diag_embed(torch.diag(logits_robust))  # 去掉对角线的 1
+    logits_robust = logits_robust.abs().sum().cpu().numpy()
+    print('Sum distance of robust label rep: {:.2f}'.format(logits_robust))
+
+    return logits, logits_robust
 
 def main():
     start = time()
@@ -228,18 +256,25 @@ def main():
     # load model
     # 根据测试的 factor 选择对应的 model
     print('factors:', args.factors)
-    logits=[0,0,0]
+    logits = [0, 0, 0]
+    logits_robust = [0, 0, 0]
+    model_num = 1
     if args.factors == 'model':
         model_arch = ['wideresnet']
-        for i in range(3):
+        for i in range(model_num):
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
-            net = loadmodel(i, factor)
-            logits[i] = test(writer, net, 'model_name', factor[0])
+            # net = loadmodel(i, factor)
+            net = loadmodel_robustfair(i, factor)
+            logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
     else:
         raise Exception('this should never happen')
-    for m in range(3):
+    # sum of the dis of the center rep
+    for m in range(model_num):
         print('%.2f' % logits[m])
+    for m in range(model_num):
+        print('%.2f' % logits_robust[m])
+
     writer.close()
     end = time()
     print('时间:{:3f}'.format((end-start)/60))
