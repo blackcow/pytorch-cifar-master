@@ -141,15 +141,28 @@ def loadmodel(i, factor):
     return net
 
 # Fair model from ICML 21
+# def loadmodel_robustfair(i, factor):
+#     # Model
+#     ckpt_list = ['trade_120_1.0.pt']
+#     print('==> Building model..')
+#     ckpt = '../Robust-Fair/cifar10/models/'
+#     ckpt += ckpt_list[i]
+#     net = create_network().cuda()
+#     # net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
+#     # net.load_state_dict(torch.load(path + ckpt))
+#     net.load_state_dict(torch.load(ckpt))
+#     net.eval()
+#     print(ckpt)
+#     return net
+
 def loadmodel_robustfair(i, factor):
     # Model
     ckpt_list = ['trade_120_1.0.pt']
     print('==> Building model..')
     ckpt = '../Robust-Fair/cifar10/models/'
     ckpt += ckpt_list[i]
-    net = create_network().cuda()
-    # net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
-    # net.load_state_dict(torch.load(path + ckpt))
+    # net = create_network().cuda()
+    net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
     net.load_state_dict(torch.load(ckpt))
     net.eval()
     print(ckpt)
