@@ -138,7 +138,7 @@ def loadmodel(i, factor):
 
 def loadmodel_preactresnte(i, factor):
     # Model
-    ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
     print('==> Building model..')
     # AT preactresnet
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
