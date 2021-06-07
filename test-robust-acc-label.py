@@ -144,7 +144,7 @@ def loadmodel_preactresnte(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     ckpt_list = ['trade_10_1.0.pt', 'trade_20_1.0.pt', 'trade_30_1.0.pt']
-    ckpt = '../Robust-Fair/cifar10/models/'
+    ckpt = '../Robust-Fair/cifar10/models/fair1/'
     ckpt += ckpt_list[i]
     # net = nn.DataParallel(create_network()).cuda()
     net = create_network().cuda()
