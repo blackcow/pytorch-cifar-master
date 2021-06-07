@@ -46,7 +46,6 @@ class PreActResNet(nn.Module):
 
         self.layer_one = self.conv1
 
-
         self.other_layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.other_layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
         self.other_layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
