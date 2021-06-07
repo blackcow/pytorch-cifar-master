@@ -18,7 +18,7 @@ import argparse
 
 from models import *
 # from utils import progress_bar
-from network import create_network
+# from network import create_network
 
 import cifar10my2
 import cifar10my3
@@ -30,6 +30,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from models.wideresnet import WideResNet
 from models.densenet import DenseNet121
+from models.preactresnet import create_network
 from torch.autograd import Variable
 from time import time
 from torch.utils.tensorboard import SummaryWriter
@@ -101,7 +102,7 @@ def loadmodel(i, factor):
     # Model
     ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     print('==> Building model..')
-    path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
+    # path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
     # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
     # ST
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/ST' \
@@ -124,16 +125,17 @@ def loadmodel(i, factor):
     #        'ST_fair_v3_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
 
     # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+
+    # AT preactresnet
+    ckpt = '/Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
 
     # Fair AT
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
     #        'TRADES/e0.031_depth34_widen10_drop0.0/'
     ckpt += ckpt_list[i]
-    # ckpt += 'model-wideres-epoch100.pt'
-
-    # net = WideResNet(depth=args.depth, widen_factor=args.widen_factor, dropRate=args.droprate).cuda()
-    net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
+    # net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
+    net = nn.DataParallel(create_network()).cuda()
     # net.load_state_dict(torch.load(path + ckpt))
     net.load_state_dict(torch.load(ckpt))
     net.eval()
@@ -272,14 +274,14 @@ def main():
     print('factors:', args.factors)
     logits = [0, 0, 0]
     logits_robust = [0, 0, 0]
-    model_num = 1
+    model_num = 3
     if args.factors == 'model':
-        model_arch = ['wideresnet']
         for i in range(model_num):
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
-            # net = loadmodel(i, factor)
-            net = loadmodel_robustfair(i, factor)
+            net = loadmodel(i, factor)
+            # test robust fair model
+            # net = loadmodel_robustfair(i, factor)
             logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
     else:
         raise Exception('this should never happen')
