@@ -146,7 +146,8 @@ def loadmodel_preactresnte(i, factor):
     ckpt_list = ['trade_10_1.0.pt', 'trade_20_1.0.pt', 'trade_30_1.0.pt']
     ckpt = '../Robust-Fair/cifar10/models/'
     ckpt += ckpt_list[i]
-    net = nn.DataParallel(create_network()).cuda()
+    # net = nn.DataParallel(create_network()).cuda()
+    net = create_network().cuda()
     net.load_state_dict(torch.load(ckpt))
     net.eval()
     print(ckpt)
