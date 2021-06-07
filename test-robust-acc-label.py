@@ -148,6 +148,7 @@ def loadmodel_preactresnte(i, factor):
     ckpt += ckpt_list[i]
     # net = nn.DataParallel(create_network()).cuda()
     net = create_network().cuda()
+    print(net)
     net.load_state_dict(torch.load(ckpt))
     net.eval()
     print(ckpt)
