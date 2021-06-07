@@ -102,7 +102,7 @@ def loadmodel(i, factor):
     # Model
     ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     print('==> Building model..')
-    # path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
+    path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
     # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
     # ST
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/ST' \
@@ -125,23 +125,30 @@ def loadmodel(i, factor):
     #        'ST_fair_v3_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
 
     # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-
-    # AT preactresnet
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+    ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
 
     # Fair AT
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'TRADES/e0.031_depth34_widen10_drop0.0/'
     ckpt += ckpt_list[i]
-    # net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
-    net = nn.DataParallel(create_network()).cuda()
-    # net.load_state_dict(torch.load(path + ckpt))
+    net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
     net.load_state_dict(torch.load(ckpt))
     net.eval()
     print(ckpt)
     return net
 
+
+def loadmodel_preactresnte(i, factor):
+    # Model
+    ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    print('==> Building model..')
+    # AT preactresnet
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+    ckpt += ckpt_list[i]
+    net = nn.DataParallel(create_network()).cuda()
+    net.load_state_dict(torch.load(ckpt))
+    net.eval()
+    print(ckpt)
+    return net
 # Fair model from ICML 21
 # def loadmodel_robustfair(i, factor):
 #     # Model
@@ -156,20 +163,6 @@ def loadmodel(i, factor):
 #     net.eval()
 #     print(ckpt)
 #     return net
-
-def loadmodel_robustfair(i, factor):
-    # Model
-    ckpt_list = ['trade_120_1.0.pt']
-    print('==> Building model..')
-    ckpt = '../Robust-Fair/cifar10/models/'
-    ckpt += ckpt_list[i]
-    # net = create_network().cuda()
-    net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
-    net.load_state_dict(torch.load(ckpt))
-    net.eval()
-
-    print(ckpt)
-    return net
 
 # PGD Attack
 def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args.step_size):
@@ -280,6 +273,7 @@ def main():
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
             net = loadmodel(i, factor)
+            # net = loadmodel_preactresnte(i, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
             logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
