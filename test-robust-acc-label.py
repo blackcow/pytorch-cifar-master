@@ -77,7 +77,7 @@ transform_test = transforms.Compose([
 bs = 20
 # bs = 1000
 testset = cifar10my3.CIFAR10MY(
-    root='./data', train=False, download=True, transform=transform_test, args=args)
+    root='../data', train=False, download=True, transform=transform_test, args=args)
 testloader = torch.utils.data.DataLoader(
     testset, batch_size=bs, shuffle=False, num_workers=2)
 
