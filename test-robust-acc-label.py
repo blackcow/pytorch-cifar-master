@@ -138,17 +138,17 @@ def loadmodel(i, factor):
 
 def loadmodel_preactresnte(i, factor):
     # Model
-    ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
+    # ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
     print('==> Building model..')
     # AT preactresnet
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    ckpt_list = ['trade_10_1.0.pt', 'trade_20_1.0.pt', 'trade_30_1.0.pt']
+    ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
     ckpt = '../Robust-Fair/cifar10/models/fair1/'
     ckpt += ckpt_list[i]
     # net = nn.DataParallel(create_network()).cuda()
     net = create_network().cuda()
-    print(net)
+    # print(net)
     net.load_state_dict(torch.load(ckpt))
     net.eval()
     print(ckpt)
