@@ -145,15 +145,14 @@ def loadmodel_preactresnte(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ICML-21
-    # ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
-    # ckpt = '../Robust-Fair/cifar10/models/fair/'
-    # ckpt += ckpt_list[i]
-    # net = create_network().cuda()
+    ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
+    ckpt = '../Robust-Fair/cifar10/models/fair/'
+    ckpt += ckpt_list[i]
+    net = create_network().cuda()
     # Fair-AT
-    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
     ckpt += ckpt_list[i]
     net = nn.DataParallel(create_network()).cuda()
 
@@ -270,7 +269,7 @@ def test(writer, net, model_name, epsilon):
     logits = torch.mm(rep_norm, torch.transpose(rep_norm, 0, 1))  # [10,HW]*[HW,10]=[10,10]
     logits = logits - torch.diag_embed(torch.diag(logits))  # 去掉对角线的 1
     # logits = logits.abs().sum().cpu().numpy()
-    # 值统计大于 0 的
+    # 只统计 cos sim 大于 0 的
     zero = torch.zeros_like(logits)
     logits1 = torch.where(logits < 0, zero, logits)
     logits1 = logits1.sum().cpu().numpy()
