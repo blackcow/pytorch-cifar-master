@@ -147,7 +147,6 @@ def loadmodel_preactresnte(i, factor):
     # ICML-21
     ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
     ckpt = '../Robust-Fair/cifar10/models/fair/'
-    ckpt += ckpt_list[i]
     net = create_network().cuda()
     # Fair-AT
     # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
