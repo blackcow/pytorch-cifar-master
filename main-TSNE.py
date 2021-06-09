@@ -70,6 +70,8 @@ path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
 # AT
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT' \
 #        '/e0.031_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
+ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+ckpt += 'model-wideres-epoch76.pt'
 
 # Fair ST 目录
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
@@ -87,12 +89,13 @@ path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
 
 # ICML-21
 # ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
-ckpt = '../Robust-Fair/cifar10/models/fair1/trade_120_1.0.pt'
+# ckpt = '../Robust-Fair/cifar10/models/fair1/trade_120_1.0.pt'
 
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch75.pt'
 # net = WideResNet().cuda()
 # net = nn.DataParallel(WideResNet()).cuda()
-net = create_network().cuda()
+net = nn.DataParallel(create_network()).cuda()
+# net = create_network().cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
 print(ckpt)
