@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 from models.wideresnet import WideResNet
 import random
 from torch.autograd import Variable
+from models.preactresnet import create_network
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
@@ -69,7 +70,7 @@ transform_test = transforms.Compose([
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-bs = 700
+bs = 1000
 # bs = 50
 testset = torchvision.datasets.CIFAR10(
     root='./data', train=False, download=True, transform=transform_test)
@@ -102,8 +103,8 @@ ckpt += 'model-wideres-epoch100.pt'
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
 #        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
 # ckpt += 'model-wideres-epoch100.pt'
-
-net = nn.DataParallel(WideResNet()).cuda()
+net = create_network().cuda()
+# net = nn.DataParallel(WideResNet()).cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
 print(ckpt)
@@ -146,9 +147,7 @@ def plot_embedding(data, label, title):
                  color=plt.cm.Set3(label[i]),
                  fontdict={'weight': 'bold', 'size': 7})
         plt.plot(data[i, 0], data[i, 1])
-    # plt.xticks([])
-    # plt.yticks([])
-    # plt.title(title)
+    plt.savefig("vis-adv.png")
     plt.show()
     return fig
 

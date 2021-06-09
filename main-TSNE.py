@@ -24,6 +24,7 @@ from time import time
 import numpy as np
 import matplotlib.pyplot as plt
 from models.wideresnet import WideResNet
+from models.preactresnet import create_network
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
@@ -81,13 +82,17 @@ path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
 # # Fair AT
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
 #        'TRADES/e0.031_depth34_widen10_drop0.0/'
-ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-ckpt += 'model-wideres-epoch100.pt'
+# ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+# ckpt += 'model-wideres-epoch100.pt'
+
+# ICML-21
+# ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
+ckpt = '../Robust-Fair/cifar10/models/fair1/trade_120_1.0.pt'
 
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch75.pt'
 # net = WideResNet().cuda()
-net = nn.DataParallel(WideResNet()).cuda()
-# net.load_state_dict(torch.load(path +'/model-wideres-epoch100.pt'))
+# net = nn.DataParallel(WideResNet()).cuda()
+net = create_network().cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
 print(ckpt)
@@ -106,6 +111,7 @@ def plot_embedding(data, label, title):
                  color=plt.cm.Set3(label[i]),
                  fontdict={'weight': 'bold', 'size': 7})
         plt.plot(data[i, 0], data[i, 1])
+    plt.savefig("vis-benign.png")
     plt.show()
     return fig
 
