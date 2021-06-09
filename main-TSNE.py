@@ -149,7 +149,7 @@ def test():
     acc = 100.*correct/total
     return acc
 
-best_acc, best_epoch = test()
+test()
 
 
 # print("model best acc：%f ,epoch %d" % (best_acc, best_epoch))
