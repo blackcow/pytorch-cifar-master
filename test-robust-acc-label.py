@@ -74,8 +74,8 @@ transform_test = transforms.Compose([
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-bs = 20
-# bs = 1000
+# bs = 20
+bs = 100
 testset = cifar10my3.CIFAR10MY(
     root='../data', train=False, download=True, transform=transform_test, args=args)
 testloader = torch.utils.data.DataLoader(
@@ -97,6 +97,7 @@ def seed_everything(seed):
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
+
 
 def loadmodel(i, factor):
     # Model
@@ -149,8 +150,10 @@ def loadmodel_preactresnte(i, factor):
     # ckpt += ckpt_list[i]
     # net = create_network().cuda()
     # Fair-AT
+    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
     ckpt += ckpt_list[i]
     net = nn.DataParallel(create_network()).cuda()
 
@@ -159,6 +162,8 @@ def loadmodel_preactresnte(i, factor):
     net.eval()
     print(ckpt)
     return net
+
+
 # Fair model from ICML 21
 # def loadmodel_robustfair(i, factor):
 #     # Model
@@ -203,6 +208,7 @@ def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args
     return err, err_pgd, rep, rep_pgd
     # return err, err, rep
 
+
 # input: tensorboard, model, model_name
 def test(writer, net, model_name, epsilon):
     global best_acc
@@ -217,28 +223,34 @@ def test(writer, net, model_name, epsilon):
     tmprep, _ = net(torch.zeros([20, 3, 32, 32]).cuda())
     _, C, H, W = tmprep.size()
     # center of the rep
-    rep_label = torch.zeros([10, C*H*W]).cuda()
-    rep_robust_label = torch.zeros([10, C*H*W]).cuda()
-
+    rep_label = torch.zeros([10, C * H * W]).cuda()
+    rep_robust_label = torch.zeros([10, C * H * W]).cuda()
+    rep_all = torch.zeros([C * H * W]).cuda()
+    rep_pgd_all = torch.zeros([C * H * W]).cuda()
     i = 0
     with torch.no_grad():
-        for inputs, targets in testloader:
+        # for inputs, targets in testloader:
+        for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             X, y = Variable(inputs, requires_grad=True), Variable(targets)
             err_natural, err_robust, rep, rep_pgd = _pgd_whitebox(net, X, y, epsilon=epsilon)
             robust_err_total_label += err_robust
             natural_err_total_label += err_natural
-
+            # 累加 rep
+            rep_all = rep_all + rep.sum(dim=0)
+            rep_pgd_all = rep_pgd_all + rep_pgd.sum(dim=0)
             count = bs + count
             # 计算每个类别下的 err
             if count % 1000 == 0:
-                rep_label[i] = rep.mean(dim=0)
-                rep_robust_label[i] = rep_pgd.mean(dim=0)
-                i = i + 1
-                label_index = count/1000-1
-                robust_acc = (1-robust_err_total_label/1000).cpu().numpy()
-                natural_acc = (1-natural_err_total_label/1000).cpu().numpy()
+                rep_label[i] = rep_all/1000 # 计算 rep 中心
+                rep_robust_label[i] = rep_pgd_all/1000
+                # 清空
+                rep_all = torch.zeros([C * H * W]).cuda()
+                rep_pgd_all = torch.zeros([C * H * W]).cuda()
+                i += 1
+                robust_acc = (1 - robust_err_total_label / 1000).cpu().numpy()
+                natural_acc = (1 - natural_err_total_label / 1000).cpu().numpy()
                 acc_robust_label.append(robust_acc)
                 acc_natural_label.append(natural_acc)
                 robust_err_total_label = 0
@@ -257,16 +269,25 @@ def test(writer, net, model_name, epsilon):
     rep_norm = nn.functional.normalize(rep_label, dim=1)
     logits = torch.mm(rep_norm, torch.transpose(rep_norm, 0, 1))  # [10,HW]*[HW,10]=[10,10]
     logits = logits - torch.diag_embed(torch.diag(logits))  # 去掉对角线的 1
-    logits = logits.abs().sum().cpu().numpy()
-    print('Sum distance of each label rep: {:.2f}'.format(logits))
+    # logits = logits.abs().sum().cpu().numpy()
+    # 值统计大于 0 的
+    zero = torch.zeros_like(logits)
+    logits1 = torch.where(logits < 0, zero, logits)
+    logits1 = logits1.sum().cpu().numpy()
+    print('Sum distance of each label rep: {:.2f}'.format(logits1))
 
     rep_robust = nn.functional.normalize(rep_robust_label, dim=1)
     logits_robust = torch.mm(rep_robust, torch.transpose(rep_robust, 0, 1))  # [10,HW]*[HW,10]=[10,10]
     logits_robust = logits_robust - torch.diag_embed(torch.diag(logits_robust))  # 去掉对角线的 1
-    logits_robust = logits_robust.abs().sum().cpu().numpy()
-    print('Sum distance of robust label rep: {:.2f}'.format(logits_robust))
+    # logits_robust = logits_robust.abs().sum().cpu().numpy()
+    # 值统计大于 0 的
+    zero = torch.zeros_like(logits_robust)
+    logits2 = torch.where(logits_robust < 0, zero, logits_robust)
+    logits2 = logits2.sum().cpu().numpy()
+    print('Sum distance of robust label rep: {:.2f}'.format(logits2))
 
-    return logits, logits_robust
+    return logits1, logits2
+
 
 def main():
     start = time()
@@ -297,7 +318,8 @@ def main():
 
     writer.close()
     end = time()
-    print('时间:{:3f}'.format((end-start)/60))
+    print('时间:{:3f}'.format((end - start) / 60))
+
 
 if __name__ == '__main__':
     main()
