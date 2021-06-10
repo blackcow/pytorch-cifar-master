@@ -101,7 +101,8 @@ def seed_everything(seed):
 
 def loadmodel(i, factor):
     # Model
-    ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    ckpt_list = ['model-wideres-epoch76.pt']
     print('==> Building model..')
     path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
     # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
@@ -114,19 +115,13 @@ def loadmodel(i, factor):
     # Fair ST
     # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
     #        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v1_T0.005/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v1_T0.8_L-10/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v3_T0.1_L10/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v4_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v3_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+
+    # TRADES AT
+    ckpt = path + '/TRADES/e0.031_depth34_widen10_drop0.0'
 
     # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
+
 
     # Fair AT
     ckpt += ckpt_list[i]
@@ -302,8 +297,8 @@ def main():
         for i in range(model_num):
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
-            # net = loadmodel(i, factor)
-            net = loadmodel_preactresnte(i, factor)
+            net = loadmodel(i, factor)
+            # net = loadmodel_preactresnte(i, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
             logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
