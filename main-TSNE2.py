@@ -94,9 +94,9 @@ model_name = 'e' + str(epsilon) +'_depth34_widen10_drop0.0'
 # TRADES AT
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT' \
 #        '/e0.031_depth34_widen10_drop0.0/model-wideres-epoch76.pt'
-ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-# ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-ckpt += 'model-wideres-epoch76.pt'
+# ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+ckpt += 'model-wideres-epoch100.pt'
 
 # # Fair AT
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
