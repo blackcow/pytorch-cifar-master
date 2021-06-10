@@ -155,7 +155,8 @@ def plot_embedding(data, label, title):
                  color=plt.cm.Set3(label[i]),
                  fontdict={'weight': 'bold', 'size': 7})
         plt.plot(data[i, 0], data[i, 1])
-    plt.savefig("vis-adv.png")
+    os.mkdir('./img')
+    plt.savefig("./img/vis-adv.png")
     plt.show()
     return fig
 
