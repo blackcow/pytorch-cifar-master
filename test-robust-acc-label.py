@@ -117,7 +117,7 @@ def loadmodel(i, factor):
     #        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
 
     # TRADES AT
-    ckpt = path + '/TRADES/e0.031_depth34_widen10_drop0.0'
+    ckpt = path + 'TRADES/e0.031_depth34_widen10_drop0.0'
 
     # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
