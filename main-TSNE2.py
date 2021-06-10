@@ -94,7 +94,8 @@ model_name = 'e' + str(epsilon) +'_depth34_widen10_drop0.0'
 # TRADES AT
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT' \
 #        '/e0.031_depth34_widen10_drop0.0/model-wideres-epoch76.pt'
-ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+# ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
 ckpt += 'model-wideres-epoch76.pt'
 
 # # Fair AT
@@ -110,8 +111,8 @@ ckpt += 'model-wideres-epoch76.pt'
 # ckpt = '../Robust-Fair/cifar10/models/fair1/trade_120_1.0.pt'
 
 # net = create_network().cuda()
-net = nn.DataParallel(create_network()).cuda()
-# net = nn.DataParallel(WideResNet()).cuda()
+# net = nn.DataParallel(create_network()).cuda()
+net = nn.DataParallel(WideResNet()).cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
 print(ckpt)
