@@ -94,8 +94,8 @@ ckpt += 'model-wideres-epoch76.pt'
 
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch75.pt'
 # net = WideResNet().cuda()
-# net = nn.DataParallel(WideResNet()).cuda()
-net = nn.DataParallel(create_network()).cuda()
+net = nn.DataParallel(WideResNet()).cuda()
+# net = nn.DataParallel(create_network()).cuda()
 # net = create_network().cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
