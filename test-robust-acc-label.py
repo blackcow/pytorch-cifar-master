@@ -125,8 +125,6 @@ def loadmodel(i, factor):
     # ICML
     ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
     ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/'
-
-
     # Fair AT
     ckpt += ckpt_list[i]
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
