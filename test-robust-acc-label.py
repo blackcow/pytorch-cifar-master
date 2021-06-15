@@ -122,6 +122,10 @@ def loadmodel(i, factor):
     # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
 
+    # ICML
+    ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
+    ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/'
+
 
     # Fair AT
     ckpt += ckpt_list[i]
