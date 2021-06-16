@@ -63,7 +63,7 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
 
 # Model
 print('==> Building model..')
-path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
+# path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
 # ST
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
 #     '/ST-ori/e0.031_depth34_widen10_drop0.0/'
