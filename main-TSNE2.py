@@ -110,8 +110,8 @@ model_name = 'e' + str(epsilon) +'_depth34_widen10_drop0.0'
 # ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
 ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/trade_120_1.0.pt'
 
-net = create_network().cuda()  # ICML-21
-# net = nn.DataParallel(create_network()).cuda()
+# net = create_network().cuda() #ICML-21
+net = nn.DataParallel(create_network()).cuda()
 # net = nn.DataParallel(WideResNet()).cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
