@@ -93,8 +93,8 @@ ckpt += 'model-wideres-epoch76.pt'
 # ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/trade_120_1.0.pt'
 # net = WideResNet().cuda()
 # net = nn.DataParallel(WideResNet()).cuda()
-net = nn.DataParallel(create_network()).cuda()
-# net = create_network().cuda()
+# net = nn.DataParallel(create_network()).cuda()
+net = create_network().cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
 print(ckpt)
