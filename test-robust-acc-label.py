@@ -133,7 +133,7 @@ def loadmodel(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
     # ckpt += 'model-wideres-epoch76.pt'
 
-    ckpt += ckpt_list[i]
+    # ckpt += ckpt_list[i]
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
     net.load_state_dict(torch.load(ckpt))
     net.eval()
