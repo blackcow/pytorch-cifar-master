@@ -72,8 +72,8 @@ print('==> Building model..')
 #        '/e0.031_depth34_widen10_drop0.0/model-wideres-epoch100.pt'
 # TRADES AT
 # ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-# ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-# ckpt += 'model-wideres-epoch76.pt'
+ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+ckpt += 'model-wideres-epoch76.pt'
 
 # Fair ST 目录
 # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
@@ -90,10 +90,10 @@ print('==> Building model..')
 # ckpt += 'model-wideres-epoch100.pt'
 
 # ICML-21
-ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/trade_120_1.0.pt'
+# ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/trade_120_1.0.pt'
 # net = WideResNet().cuda()
-net = nn.DataParallel(WideResNet()).cuda()
-# net = nn.DataParallel(create_network()).cuda()
+# net = nn.DataParallel(WideResNet()).cuda()
+net = nn.DataParallel(create_network()).cuda()
 # net = create_network().cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
