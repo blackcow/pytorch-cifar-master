@@ -90,7 +90,7 @@ print('==> Building model..')
 # ckpt += 'model-wideres-epoch100.pt'
 
 # ICML-21
-ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/trade_120_1.0.pt'
+ckpt = '../Robust-Fair/cifar10/models-preactresnet/fair1/trade_120_1.0.pt'
 
 # net = WideResNet().cuda()
 # net = nn.DataParallel(WideResNet()).cuda()
