@@ -106,7 +106,6 @@ class CIFAR10MY(data.Dataset):
         self.targets = [i[1] for i in sorted_nums]
         # 对 data 排序，ndarry
         self.data = self.data[idx]
-        a=0
 
     def _load_meta(self):
         path = os.path.join(self.root, self.base_folder, self.meta['filename'])
