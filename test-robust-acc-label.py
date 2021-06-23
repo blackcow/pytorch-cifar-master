@@ -119,7 +119,7 @@ def loadmodel(i, factor):
     # TRADES AT
     # ckpt = path + 'TRADES/e0.031_depth34_widen10_drop0.0/'
     ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0'
     ckpt += 'model-wideres-epoch76.pt'
 
     # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
@@ -150,16 +150,16 @@ def loadmodel_preactresnte(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ICML-21
     # ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
-    ckpt_list = ['trade_120_1.0.pt']
-    ckpt = '../Robust-Fair/cifar10/models-preactresnet/fair1/'
-    net = create_network().cuda()
+    # ckpt_list = ['trade_120_1.0.pt']
+    # ckpt = '../Robust-Fair/cifar10/models-preactresnet/fair1/'
+    # net = create_network().cuda()
     # Fair-AT
     # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1-fl1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # net = nn.DataParallel(create_network()).cuda()
-    ckpt += ckpt_list[i]
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/model-wideres-epoch76.pt'
+    net = nn.DataParallel(create_network()).cuda()
+    # ckpt += ckpt_list[i]
 
     # print(net)
     net.load_state_dict(torch.load(ckpt))
