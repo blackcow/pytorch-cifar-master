@@ -159,8 +159,13 @@ def loadmodel_preactresnte(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1-fl1/e0.031_depth34_widen10_drop0.0/'
     ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
     ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    # Fine-Tune model
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune/'
+    ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
+
     net = nn.DataParallel(create_network()).cuda()
     ckpt += ckpt_list[i]
+
 
     # print(net)
     net.load_state_dict(torch.load(ckpt))
