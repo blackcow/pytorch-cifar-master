@@ -136,8 +136,10 @@ def loadmodel(i, factor):
     # ckpt += ckpt_list[i]
 
     ckpt = '/data/niuzh/model/cifar10_rst_adv.pt.ckpt'
+    checkpoint = torch.load(ckpt)
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
-    net.load_state_dict(torch.load(ckpt))
+    net.load_state_dict(checkpoint['state_dict'])
+    # net.load_state_dict(checkpoint)
     net.eval()
     print(ckpt)
     return net
