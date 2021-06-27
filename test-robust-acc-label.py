@@ -118,9 +118,9 @@ def loadmodel(i, factor):
 
     # TRADES AT
     # ckpt = path + 'TRADES/e0.031_depth34_widen10_drop0.0/'
-    ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0'
-    ckpt += 'model-wideres-epoch76.pt'
+    # ckpt += 'model-wideres-epoch76.pt'
 
     # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
@@ -134,6 +134,8 @@ def loadmodel(i, factor):
     # ckpt += 'model-wideres-epoch76.pt'
 
     # ckpt += ckpt_list[i]
+
+    ckpt = '/data/niuzh/model/cifar10_rst_adv.pt.ckpt'
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
     net.load_state_dict(torch.load(ckpt))
     net.eval()
@@ -322,8 +324,8 @@ def main():
         for i in range(model_num):
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
-            # net = loadmodel(i, factor)
-            net = loadmodel_preactresnte(i, factor)
+            net = loadmodel(i, factor)
+            # net = loadmodel_preactresnte(i, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
             logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
