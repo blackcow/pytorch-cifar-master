@@ -25,6 +25,8 @@ from time import time
 import numpy as np
 import matplotlib.pyplot as plt
 from models.wideresnet import WideResNet
+from models.preactresnet import create_network
+import random
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
@@ -49,17 +51,17 @@ transform_train = transforms.Compose([
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     # 对于 TRADES 提供的 model 注释掉
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
 transform_test = transforms.Compose([
     transforms.ToTensor(),
     # 对于 TRADES 提供的 model 注释掉
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
 # 改写后的 load data
-trainset = cifar10my2.CIFAR10MY(
+trainset = cifar10my3.CIFAR10MY(
     root='./data', train=True, download=True, transform=transform_train, args=args)
 trainloader = torch.utils.data.DataLoader(
     trainset, batch_size=128, shuffle=True, num_workers=2)
@@ -76,8 +78,8 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck')
 
 # Model
-print('==> Building model..')
-path = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/'
+
+# path = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/'
 # # net = VGG('VGG19')
 
 # # net = resnet.ResNet18()
@@ -109,14 +111,34 @@ path = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/'
 # ckpt = 'model_cifar_wrn.pt'
 # ckpt = 'model_cifar_wrn.pt'
 # ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/ST/model-wideres-epoch87.pt'
-ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/0.031/model-wideres-epoch23.pt'
-# net = WideResNet().cuda()
-net = nn.DataParallel(WideResNet()).cuda()
-# net.load_state_dict(torch.load(path + ckpt))
-net.load_state_dict(torch.load(ckpt))
-net.eval()
-
 cudnn.benchmark = True
+def loadmodel(i, factor):
+    print('==> Building model..')
+    ckpt = '/hot-data/niuzh/Mycode/TRADES-master/model-cifar-wideResNet/AT/0.031/model-wideres-epoch23.pt'
+    # net = WideResNet().cuda()
+    net = nn.DataParallel(WideResNet()).cuda()
+    # net.load_state_dict(torch.load(path + ckpt))
+    net.load_state_dict(torch.load(ckpt))
+    net.eval()
+
+def loadmodel_preactresnte(i, factor):
+    print('==> Building model..')
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/rmlabel_5/'
+    ckpt_list = ['percent_0.2', 'percent_0.5', 'percent_0.7', 'percent_0.9']
+    net = nn.DataParallel(create_network()).cuda()
+    ckpt += ckpt_list[i]
+    ckpt += '/model-wideres-epoch100.pt'
+    net.eval()
+
+
+def seed_everything(seed):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
 
 def plot_embedding(data, label, title):
     x_min, x_max = np.min(data, 0), np.max(data, 0)
@@ -182,9 +204,35 @@ def test():
     print('{:3f}'.format(mean_acc))
     return 0
 
-# best_acc, best_epoch = test()
-test()
+def main():
+    start = time()
+    seed_everything(1)
+    # load model
+    # 根据测试的 factor 选择对应的 model
+    print('factors:', args.factors)
+    logits = [0, 0, 0]
+    logits_robust = [0, 0, 0]
+    model_num = 3
+    if args.factors == 'model':
+        for i in range(model_num):
+            print("Test: " + str(i))
+            factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
+            net = loadmodel(i, factor)
+            # net = loadmodel_preactresnte(i, factor)
+            # test robust fair model
+            # net = loadmodel_robustfair(i, factor)
+            logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
+    else:
+        raise Exception('this should never happen')
+    # sum of the dis of the center rep
+    for m in range(model_num):
+        print('%.2f' % logits[m])
+    for m in range(model_num):
+        print('%.2f' % logits_robust[m])
 
+    writer.close()
+    end = time()
+    print('时间:{:3f}'.format((end - start) / 60))
 
-# print("model best acc：%f ,epoch %d" % (best_acc, best_epoch))
-# print(args)
+if __name__ == '__main__':
+    main()
