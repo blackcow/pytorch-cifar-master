@@ -117,6 +117,7 @@ def loadmodel_preactresnte(i, factor):
     checkpoint = torch.load(ckpt)
     net.load_state_dict(checkpoint)
     net.eval()
+    print(ckpt)
     return net
 
 # PGD Attack
