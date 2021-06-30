@@ -109,8 +109,10 @@ def loadmodel(i, factor):
 
 def loadmodel_preactresnte(i, factor):
     print('==> Building model..')
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/rmlabel_0/'
-    ckpt_list = ['percent_0.2', 'percent_0.5', 'percent_0.7', 'percent_0.9']
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/rmlabel_0/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_cl/'
+    # ckpt_list = ['percent_0.2', 'percent_0.5', 'percent_0.7', 'percent_0.9']
+    ckpt_list = ['ckpt-epoch76.pt', 'ckpt-epoch100.pt']
     net = nn.DataParallel(create_network()).cuda()
     ckpt += ckpt_list[i]
     ckpt += '/model-wideres-epoch100.pt'
