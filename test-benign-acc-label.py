@@ -243,6 +243,7 @@ def main():
             # net = loadmodel(i, factor)
             # net = loadmodel_preactresnte(i, factor)
             net = loadmodel_preactresnte_cl(i, factor)
+
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
             logits[i] = test(writer, net, 'model_name', factor[0])
