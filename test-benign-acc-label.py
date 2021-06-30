@@ -115,7 +115,7 @@ def loadmodel_preactresnte(i, factor):
     ckpt_list = ['ckpt-epoch76.pt', 'ckpt-epoch100.pt']
     net = nn.DataParallel(create_network()).cuda()
     ckpt += ckpt_list[i]
-    ckpt += '/model-wideres-epoch100.pt'
+    # ckpt += '/model-wideres-epoch100.pt'
     checkpoint = torch.load(ckpt)
     net.load_state_dict(checkpoint)
     net.eval()
