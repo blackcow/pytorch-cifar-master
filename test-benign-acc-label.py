@@ -21,6 +21,7 @@ from models import *
 
 import cifar10my2
 import cifar10my3
+import models.preactresnet_cl
 from sklearn import datasets
 from sklearn.manifold import TSNE
 from mpl_toolkits.mplot3d import Axes3D
@@ -122,32 +123,25 @@ def loadmodel_preactresnte(i, factor):
     print(ckpt)
     return net
 
-# PGD Attack
+def loadmodel_preactresnte_cl(i, factor):
+    print('==> Building model..')
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_cl/'
+    ckpt_list = ['ckpt-epoch76.pt', 'ckpt-epoch100.pt']
+    net = nn.DataParallel(models.preactresnet_cl.create_network()).cuda()
+    ckpt += ckpt_list[i]
+    # ckpt += '/model-wideres-epoch100.pt'
+    checkpoint = torch.load(ckpt)
+    net.load_state_dict(checkpoint['net'])
+    net.eval()
+    print(ckpt)
+    return net
+
+# acc test
 def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args.step_size):
     rep, out = model(X)
     N, C, H, W = rep.size()
     rep = rep.reshape([N, -1])
     err = (out.data.max(1)[1] != y.data).float().sum()
-    # X_pgd = Variable(X.data, requires_grad=True)
-    # if args.random:
-    #     random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
-    #     X_pgd = Variable(X_pgd.data + random_noise, requires_grad=True)
-    #
-    # for _ in range(num_steps):
-    #     opt = optim.SGD([X_pgd], lr=1e-3)
-    #     opt.zero_grad()
-    #     with torch.enable_grad():
-    #         loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
-    #     loss.backward()
-    #     eta = step_size * X_pgd.grad.data.sign()
-    #     X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
-    #     eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
-    #     X_pgd = Variable(X.data + eta, requires_grad=True)
-    #     X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
-    # rep_pgd, out_pgd = model(X_pgd)
-    # err_pgd = (out_pgd.data.max(1)[1] != y.data).float().sum()
-
-    # rep_pgd = rep_pgd.reshape([N, -1])
     return err, None, rep, None
     # return err, err, rep
 
@@ -247,7 +241,8 @@ def main():
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
             # net = loadmodel(i, factor)
-            net = loadmodel_preactresnte(i, factor)
+            # net = loadmodel_preactresnte(i, factor)
+            net = loadmodel_preactresnte_cl(i, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
             logits[i] = test(writer, net, 'model_name', factor[0])
