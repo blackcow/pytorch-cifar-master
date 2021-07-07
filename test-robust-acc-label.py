@@ -330,8 +330,8 @@ def main():
         for i in range(model_num):
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
-            net = loadmodel(i, factor)
-            # net = loadmodel_preactresnte(i, factor)
+            # net = loadmodel(i, factor)
+            net = loadmodel_preactresnte(i, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
             logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
