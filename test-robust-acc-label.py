@@ -165,8 +165,12 @@ def loadmodel_preactresnte(i, factor):
     # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
 
     # AT with OPT save
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/AT-opt/'
-    ckpt_list = ['ckpt-epoch75.pt', 'ckpt-epoch76.pt', 'ckpt-epoch100.pt']
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/AT-opt/'
+    # ckpt_list = ['ckpt-epoch75.pt', 'ckpt-epoch76.pt', 'ckpt-epoch100.pt']
+
+    # rm label AT
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/rmlabel_seed1/rmlabel0/'
+    ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
 
     # Fine-Tune model
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune/'
@@ -177,11 +181,11 @@ def loadmodel_preactresnte(i, factor):
 
 
     # print(net)
-    # net.load_state_dict(torch.load(ckpt))
+    net.load_state_dict(torch.load(ckpt))
 
     # for AT-opt
-    checkpoint = torch.load(ckpt)
-    net.load_state_dict(checkpoint['net'])
+    # checkpoint = torch.load(ckpt)
+    # net.load_state_dict(checkpoint['net'])
     net.eval()
     print(ckpt)
     return net
@@ -321,7 +325,7 @@ def main():
     print('factors:', args.factors)
     logits = [0, 0, 0]
     logits_robust = [0, 0, 0]
-    model_num = 3
+    model_num = 2
     if args.factors == 'model':
         for i in range(model_num):
             print("Test: " + str(i))
