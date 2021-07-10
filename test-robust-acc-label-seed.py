@@ -325,23 +325,24 @@ def main():
     print('factors:', args.factors)
     logits = [0, 0, 0]
     logits_robust = [0, 0, 0]
-    model_num = 2
+    seed = 10
     if args.factors == 'model':
-        for i in range(model_num):
-            print("Test: " + str(i))
-            factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
-            # net = loadmodel(i, factor)
-            net = loadmodel_preactresnte(i, factor)
-            # test robust fair model
-            # net = loadmodel_robustfair(i, factor)
-            logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
+        for se in range(seed):
+            for i in range(2):
+                print("Test: " + str(i))
+                factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
+                # net = loadmodel(i, factor)
+                net = loadmodel_preactresnte(se, i, factor)
+                # test robust fair model
+                # net = loadmodel_robustfair(i, factor)
+                logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
     else:
         raise Exception('this should never happen')
     # sum of the dis of the center rep
-    for m in range(model_num):
-        print('%.2f' % logits[m])
-    for m in range(model_num):
-        print('%.2f' % logits_robust[m])
+    # for m in range(model_num):
+    #     print('%.2f' % logits[m])
+    # for m in range(model_num):
+    #     print('%.2f' % logits_robust[m])
 
     writer.close()
     end = time()
