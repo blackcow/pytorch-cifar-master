@@ -169,12 +169,15 @@ def loadmodel_preactresnte(label, i, factor):
     # ckpt_list = ['ckpt-epoch75.pt', 'ckpt-epoch76.pt', 'ckpt-epoch100.pt']
 
     # rm label AT
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/rmlabel_seed2/rmlabel' + str(label) + '/'
-    ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/rmlabel_seed2/rmlabel' + str(label) + '/'
+    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
 
     # Fine-Tune model
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune/'
     # ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
+    # FC Fine-Tune model
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune-FC/'
+    ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
 
     net = nn.DataParallel(create_network()).cuda()
     ckpt += ckpt_list[i]
