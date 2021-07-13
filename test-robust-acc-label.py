@@ -177,7 +177,7 @@ def loadmodel_preactresnte(label, i, factor):
     # ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
     # FC Fine-Tune model
     ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune-FC/'
-    ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
+    ckpt_list = ['ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt', 'ckpt-ft-epoch140.pt']
 
     net = nn.DataParallel(create_network()).cuda()
     ckpt += ckpt_list[i]
@@ -328,7 +328,7 @@ def main():
     print('factors:', args.factors)
     logits = [0, 0, 0]
     logits_robust = [0, 0, 0]
-    model_num = 2
+    model_num = 3
     if args.factors == 'model':
         for i in range(model_num):
             print("Test: " + str(i))
