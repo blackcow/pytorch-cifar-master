@@ -145,7 +145,7 @@ def loadmodel(i, factor):
     return net
 
 
-def loadmodel_preactresnte(label, i, factor):
+def loadmodel_preactresnte(i, factor):
     # Model
     # ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
     print('==> Building model..')
