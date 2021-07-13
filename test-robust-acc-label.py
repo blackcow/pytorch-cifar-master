@@ -175,20 +175,24 @@ def loadmodel_preactresnte(label, i, factor):
     # Fine-Tune model
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune/'
     # ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
+
     # FC Fine-Tune model
     ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune-FC/resum_100/'
     ckpt_list = ['ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt', 'ckpt-ft-epoch140.pt']
 
+    # 只在某 label 上，做 AT
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/svlabel_seed1/svlabel_35/'
+    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     net = nn.DataParallel(create_network()).cuda()
     ckpt += ckpt_list[i]
 
 
     # print(net)
-    net.load_state_dict(torch.load(ckpt))
+    # net.load_state_dict(torch.load(ckpt))
 
-    # for AT-opt
-    # checkpoint = torch.load(ckpt)
-    # net.load_state_dict(checkpoint['net'])
+    # for AT-opt & Fine-tune model
+    checkpoint = torch.load(ckpt)
+    net.load_state_dict(checkpoint['net'])
     net.eval()
     print(ckpt)
     return net
