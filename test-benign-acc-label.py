@@ -116,7 +116,7 @@ def loadmodel_preactresnte(i, factor):
     # ckpt_list = ['ckpt-epoch76.pt', 'ckpt-epoch100.pt']
 
     # ST-keeplabel
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/kplabel/percent_0.1'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/kplabel/percent_0.1/'
     ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     net = nn.DataParallel(create_network()).cuda()
     ckpt += ckpt_list[i]
