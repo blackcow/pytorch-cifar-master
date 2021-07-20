@@ -5,6 +5,7 @@
 绘制成图
 计算各 label 的特征中心，然后 label 特征中心的距离
 python test-robust-acc-mglabel.py --merge-label 3 5
+/Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/mglabel_seed1/mglabel_35/
 '''
 import torch
 import torch.nn as nn
@@ -82,7 +83,7 @@ transform_test = transforms.Compose([
 ])
 
 # bs = 20
-bs = 100
+bs = 1000
 testset = cifar10_mglabel.CIFAR10MG(
     root='../data', train=False, download=True, transform=transform_test, args=args)
 testloader = torch.utils.data.DataLoader(
@@ -222,27 +223,28 @@ def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args
     N, C, H, W = rep.size()
     rep = rep.reshape([N, -1])
     err = (out.data.max(1)[1] != y.data).float().sum()
-    X_pgd = Variable(X.data, requires_grad=True)
-    if args.random:
-        random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
-        X_pgd = Variable(X_pgd.data + random_noise, requires_grad=True)
-
-    for _ in range(num_steps):
-        opt = optim.SGD([X_pgd], lr=1e-3)
-        opt.zero_grad()
-        with torch.enable_grad():
-            loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
-        loss.backward()
-        eta = step_size * X_pgd.grad.data.sign()
-        X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
-        eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
-        X_pgd = Variable(X.data + eta, requires_grad=True)
-        X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
-    rep_pgd, out_pgd = model(X_pgd)
-    err_pgd = (out_pgd.data.max(1)[1] != y.data).float().sum()
-
-    rep_pgd = rep_pgd.reshape([N, -1])
-    return err, err_pgd, rep, rep_pgd
+    # X_pgd = Variable(X.data, requires_grad=True)
+    # if args.random:
+    #     random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
+    #     X_pgd = Variable(X_pgd.data + random_noise, requires_grad=True)
+    #
+    # for _ in range(num_steps):
+    #     opt = optim.SGD([X_pgd], lr=1e-3)
+    #     opt.zero_grad()
+    #     with torch.enable_grad():
+    #         loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
+    #     loss.backward()
+    #     eta = step_size * X_pgd.grad.data.sign()
+    #     X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
+    #     eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
+    #     X_pgd = Variable(X.data + eta, requires_grad=True)
+    #     X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
+    # rep_pgd, out_pgd = model(X_pgd)
+    # err_pgd = (out_pgd.data.max(1)[1] != y.data).float().sum()
+    #
+    # rep_pgd = rep_pgd.reshape([N, -1])
+    # return err, err_pgd, rep, rep_pgd
+    return err, err, rep, rep
     # return err, err, rep
 
 
@@ -272,26 +274,26 @@ def test(writer, net, model_name, epsilon):
 
             X, y = Variable(inputs, requires_grad=True), Variable(targets)
             err_natural, err_robust, rep, rep_pgd = _pgd_whitebox(net, X, y, epsilon=epsilon)
-            robust_err_total_label += err_robust
-            natural_err_total_label += err_natural
-            # 累加 rep
-            rep_all = rep_all + rep.sum(dim=0)
-            rep_pgd_all = rep_pgd_all + rep_pgd.sum(dim=0)
-            count = bs + count
+            # robust_err_total_label += err_robust
+            # natural_err_total_label += err_natural
+            # # 累加 rep
+            # rep_all = rep_all + rep.sum(dim=0)
+            # rep_pgd_all = rep_pgd_all + rep_pgd.sum(dim=0)
+            # count = bs + count
             # 计算每个类别下的 err
-            if count % 1000 == 0:
-                rep_label[i] = rep_all/1000 # 计算 rep 中心
-                rep_robust_label[i] = rep_pgd_all/1000
-                # 清空
-                rep_all = torch.zeros([C * H * W]).cuda()
-                rep_pgd_all = torch.zeros([C * H * W]).cuda()
-                i += 1
-                robust_acc = (1 - robust_err_total_label / 1000).cpu().numpy()
-                natural_acc = (1 - natural_err_total_label / 1000).cpu().numpy()
-                acc_robust_label.append(robust_acc)
-                acc_natural_label.append(natural_acc)
-                robust_err_total_label = 0
-                natural_err_total_label = 0
+            # if count % 1000 == 0:
+            #     rep_label[i] = rep_all/1000 # 计算 rep 中心
+            #     rep_robust_label[i] = rep_pgd_all/1000
+            #     # 清空
+            #     rep_all = torch.zeros([C * H * W]).cuda()
+            #     rep_pgd_all = torch.zeros([C * H * W]).cuda()
+            #     i += 1
+            #     robust_acc = (1 - robust_err_total_label / 1000).cpu().numpy()
+            #     natural_acc = (1 - natural_err_total_label / 1000).cpu().numpy()
+            #     acc_robust_label.append(robust_acc)
+            #     acc_natural_label.append(natural_acc)
+            #     robust_err_total_label = 0
+            #     natural_err_total_label = 0
 
     # 输出各 label 下的 acc
     print('acc_natural_label：')
