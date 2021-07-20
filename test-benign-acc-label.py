@@ -111,14 +111,18 @@ def loadmodel(i, factor):
 def loadmodel_preactresnte(i, factor):
     print('==> Building model..')
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/rmlabel_0/'
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_cl/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_cl/'
     # ckpt_list = ['percent_0.2', 'percent_0.5', 'percent_0.7', 'percent_0.9']
-    ckpt_list = ['ckpt-epoch76.pt', 'ckpt-epoch100.pt']
+    # ckpt_list = ['ckpt-epoch76.pt', 'ckpt-epoch100.pt']
+
+    # ST-keeplabel
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/kplabel/percent_0.1'
+    ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     net = nn.DataParallel(create_network()).cuda()
     ckpt += ckpt_list[i]
-    # ckpt += '/model-wideres-epoch100.pt'
     checkpoint = torch.load(ckpt)
-    net.load_state_dict(checkpoint['net'])
+    # net.load_state_dict(checkpoint['net'])
+    net.load_state_dict(checkpoint)
     net.eval()
     print(ckpt)
     return net
@@ -235,14 +239,14 @@ def main():
     print('factors:', args.factors)
     logits = [0, 0, 0, 0]
     # logits_robust = [0, 0, 0]
-    model_num = 4
+    model_num = 2
     if args.factors == 'model':
         for i in range(model_num):
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
             # net = loadmodel(i, factor)
-            # net = loadmodel_preactresnte(i, factor)
-            net = loadmodel_preactresnte_cl(i, factor)
+            net = loadmodel_preactresnte(i, factor)
+            # net = loadmodel_preactresnte_cl(i, factor)
 
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
