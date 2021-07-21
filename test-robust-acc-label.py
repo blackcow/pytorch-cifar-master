@@ -76,16 +76,13 @@ transform_test = transforms.Compose([
 
 # bs = 20
 bs = 100
-testset = cifar10my3.CIFAR10MY(
-    root='../data', train=False, download=True, transform=transform_test, args=args)
-testloader = torch.utils.data.DataLoader(
-    testset, batch_size=bs, shuffle=False, num_workers=2)
+if args.dataset == 'CIFAR10':
+    testset = cifar10my3.CIFAR10MY(root='../data', train=False, download=True, transform=transform_test, args=args)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
+elif args.dataset == 'CIFAR100':
+    testset = cifar10my3.CIFAR100MY(root='../data', train=False, download=True, transform=transform_test, args=args)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
 
-# set up data loader
-# kwargs = {'num_workers': 1, 'pin_memory': True}
-# transform_test = transforms.Compose([transforms.ToTensor(),])
-# testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
-# testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, **kwargs)
 cudnn.benchmark = True
 
 
@@ -177,22 +174,29 @@ def loadmodel_preactresnte(i, factor):
     # ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
 
     # FC Fine-Tune model
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune-FC/resum_100/'
-    ckpt_list = ['ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt', 'ckpt-ft-epoch140.pt']
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune-FC/resum_100/'
+    # ckpt_list = ['ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt', 'ckpt-ft-epoch140.pt']
 
     # 只在某 label 上，做 AT
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/svlabel_seed1/svlabel_35/'
     # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    net = nn.DataParallel(create_network()).cuda()
+
+    # CIFAR 100, TRADES
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR100/'
+    ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+
+    if args.dataset == 'CIFAR10':
+        num_classes = 10
+    elif args.dataset == 'CIFAR100':
+        num_classes = 100
+    net = nn.DataParallel(create_network(num_classes)).cuda()
     ckpt += ckpt_list[i]
-
-
     # print(net)
-    # net.load_state_dict(torch.load(ckpt))
+    net.load_state_dict(torch.load(ckpt))
 
     # for AT-opt & Fine-tune model
-    checkpoint = torch.load(ckpt)
-    net.load_state_dict(checkpoint['net'])
+    # checkpoint = torch.load(ckpt)
+    # net.load_state_dict(checkpoint['net'])
     net.eval()
     print(ckpt)
     return net
@@ -276,15 +280,20 @@ def test(writer, net, model_name, epsilon):
             rep_pgd_all = rep_pgd_all + rep_pgd.sum(dim=0)
             count = bs + count
             # 计算每个类别下的 err
-            if count % 1000 == 0:
-                rep_label[i] = rep_all/1000 # 计算 rep 中心
-                rep_robust_label[i] = rep_pgd_all/1000
+            # 计算每个类别下的 err
+            if args.dataset == 'CIFAR10':
+                label_test = 1000
+            elif args.dataset == 'CIFAR100':
+                label_test = 100
+            if count % label_test == 0:
+                rep_label[i] = rep_all/label_test  # 计算 rep 中心
+                rep_robust_label[i] = rep_pgd_all/label_test
                 # 清空
                 rep_all = torch.zeros([C * H * W]).cuda()
                 rep_pgd_all = torch.zeros([C * H * W]).cuda()
                 i += 1
-                robust_acc = (1 - robust_err_total_label / 1000).cpu().numpy()
-                natural_acc = (1 - natural_err_total_label / 1000).cpu().numpy()
+                robust_acc = (1 - robust_err_total_label / label_test).cpu().numpy()
+                natural_acc = (1 - natural_err_total_label / label_test).cpu().numpy()
                 acc_robust_label.append(robust_acc)
                 acc_natural_label.append(natural_acc)
                 robust_err_total_label = 0
@@ -332,7 +341,7 @@ def main():
     print('factors:', args.factors)
     logits = [0, 0, 0]
     logits_robust = [0, 0, 0]
-    model_num = 3
+    model_num = 2
     if args.factors == 'model':
         for i in range(model_num):
             print("Test: " + str(i))
