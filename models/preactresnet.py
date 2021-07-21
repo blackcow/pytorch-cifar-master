@@ -36,7 +36,7 @@ class PreActBlock(nn.Module):
 
 class PreActResNet(nn.Module):
 
-    def __init__(self, block, num_blocks, num_classes=10):
+    def __init__(self, block, num_blocks, num_classes):
         super(PreActResNet, self).__init__()
         self.in_planes = 64
 
@@ -102,12 +102,12 @@ class GlobalpoolFC(nn.Module):
         return y
 
 
-def PreActResNet18():
-    return PreActResNet(PreActBlock, [2, 2, 2, 2])
+def PreActResNet18(num_classes):
+    return PreActResNet(PreActBlock, [2, 2, 2, 2], num_classes)
 
 
-def PreActResNet34():
-    return PreActResNet(PreActBlock, [3, 4, 6, 3])
+def PreActResNet34(num_classes):
+    return PreActResNet(PreActBlock, [3, 4, 6, 3], num_classes)
 
 
 class PreActBottleneck(nn.Module):
@@ -137,11 +137,11 @@ class PreActBottleneck(nn.Module):
         out += shortcut
         return out
 
-def create_network():
-    return PreActResNet18()
+def create_network(num_classes):
+    return PreActResNet18(num_classes)
 
 
-def test():
-    net = PreActResNet18()
+def test(num_classes):
+    net = PreActResNet18(num_classes)
     y = net((torch.randn(1, 3, 32, 32)))
     print(y.size())

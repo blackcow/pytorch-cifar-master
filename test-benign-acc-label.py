@@ -57,6 +57,9 @@ parser.add_argument('--epsilon', default=0.031, type=float, help='perturbation')
 parser.add_argument('--num-steps', default=20, help='perturb number of steps')
 parser.add_argument('--step-size', default=0.003, help='perturb step size')
 parser.add_argument('--random', default=True, help='random initialization for PGD')
+# training on dataset
+parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10'],
+                    help='train model on dataset')
 args = parser.parse_args()
 print(args)
 
@@ -75,10 +78,13 @@ transform_test = transforms.Compose([
 ])
 
 bs = 100
-testset = cifar10my3.CIFAR10MY(
-    root='../data', train=False, download=True, transform=transform_test, args=args)
-testloader = torch.utils.data.DataLoader(
-    testset, batch_size=bs, shuffle=False, num_workers=2)
+if args.dataset == 'CIFAR10':
+    testset = cifar10my3.CIFAR10MY(root='../data', train=False, download=True, transform=transform_test, args=args)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
+elif args.dataset == 'CIFAR100':
+    testset = cifar10my3.CIFAR100MY(root='../data', train=False, download=True, transform=transform_test, args=args)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
+
 
 cudnn.benchmark = True
 
@@ -115,10 +121,16 @@ def loadmodel_preactresnte(i, factor):
     # ckpt_list = ['percent_0.2', 'percent_0.5', 'percent_0.7', 'percent_0.9']
     # ckpt_list = ['ckpt-epoch76.pt', 'ckpt-epoch100.pt']
 
-    # ST-keeplabel
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/kplabel/percent_0.1/'
+    # ST-keeplabel, CIFAR 10
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/kplabel/percent_0.1/'
+    # CIFAR 100
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR100/kplabel/percent_1.0/'
     ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    net = nn.DataParallel(create_network()).cuda()
+    if args.dataset == 'CIFAR10':
+        num_classes = 10
+    elif args.dataset == 'CIFAR100':
+        num_classes = 100
+    net = nn.DataParallel(create_network(num_classes)).cuda()
     ckpt += ckpt_list[i]
     checkpoint = torch.load(ckpt)
     # net.load_state_dict(checkpoint['net'])
@@ -165,10 +177,6 @@ def test(writer, net, model_name, epsilon):
     _, C, H, W = tmprep.size()
     # center of the rep
     rep_label = torch.zeros([10, C * H * W]).cuda()
-    # rep_robust_label = torch.zeros([10, C * H * W]).cuda()
-    rep_all = torch.zeros([C * H * W]).cuda()
-    # rep_pgd_all = torch.zeros([C * H * W]).cuda()
-    i = 0
     with torch.no_grad():
         # for inputs, targets in testloader:
         for batch_idx, (inputs, targets) in enumerate(testloader):
@@ -178,33 +186,21 @@ def test(writer, net, model_name, epsilon):
             err_natural, _, rep, _ = _pgd_whitebox(net, X, y, epsilon=epsilon)
             # robust_err_total_label += err_robust
             natural_err_total_label += err_natural
-            # 累加 rep
-            rep_all = rep_all + rep.sum(dim=0)
-            # rep_pgd_all = rep_pgd_all + rep_pgd.sum(dim=0)
             count = bs + count
             # 计算每个类别下的 err
-            if count % 1000 == 0:
-                rep_label[i] = rep_all/1000 # 计算 rep 中心
-                # rep_robust_label[i] = rep_pgd_all/1000
-                # 清空
-                rep_all = torch.zeros([C * H * W]).cuda()
-                # rep_pgd_all = torch.zeros([C * H * W]).cuda()
-                i += 1
-                # robust_acc = (1 - robust_err_total_label / 1000).cpu().numpy()
-                natural_acc = (1 - natural_err_total_label / 1000).cpu().numpy()
-                # acc_robust_label.append(robust_acc)
-                acc_natural_label.append(natural_acc)
-                # robust_err_total_label = 0
-                natural_err_total_label = 0
+            if args.dataset == 'CIFAR10':
+                label_test = 1000
+            elif args.dataset == 'CIFAR100':
+                label_test = 100
+            if count % label_test == 0:
+                    natural_acc = (1 - natural_err_total_label / label_test).cpu().numpy()
+                    acc_natural_label.append(natural_acc)
+                    natural_err_total_label = 0
 
     # 输出各 label 下的 acc
     print('acc_natural_label：')
     for i in acc_natural_label:
         print('{:3f}'.format(i))
-
-    # print('acc_robust_label：')
-    # for i in acc_robust_label:
-    #     print('{:3f}'.format(i))
 
     # 各 label 的 Rep 中心归一化，计算余弦相似度
     rep_norm = nn.functional.normalize(rep_label, dim=1)
@@ -216,17 +212,6 @@ def test(writer, net, model_name, epsilon):
     logits1 = torch.where(logits < 0, zero, logits)
     logits1 = logits1.sum().cpu().numpy()
     print('Sum distance of each label rep: {:.2f}'.format(logits1))
-
-    # rep_robust = nn.functional.normalize(rep_robust_label, dim=1)
-    # logits_robust = torch.mm(rep_robust, torch.transpose(rep_robust, 0, 1))  # [10,HW]*[HW,10]=[10,10]
-    # logits_robust = logits_robust - torch.diag_embed(torch.diag(logits_robust))  # 去掉对角线的 1
-    # # logits_robust = logits_robust.abs().sum().cpu().numpy()
-    # # 值统计大于 0 的
-    # zero = torch.zeros_like(logits_robust)
-    # logits2 = torch.where(logits_robust < 0, zero, logits_robust)
-    # logits2 = logits2.sum().cpu().numpy()
-    # print('Sum distance of robust label rep: {:.2f}'.format(logits2))
-
     return logits1
 
 
@@ -247,9 +232,6 @@ def main():
             # net = loadmodel(i, factor)
             net = loadmodel_preactresnte(i, factor)
             # net = loadmodel_preactresnte_cl(i, factor)
-
-            # test robust fair model
-            # net = loadmodel_robustfair(i, factor)
             logits[i] = test(writer, net, 'model_name', factor[0])
     else:
         raise Exception('this should never happen')
