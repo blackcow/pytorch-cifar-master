@@ -201,7 +201,7 @@ def test(writer, net, model_name, epsilon):
     # 输出各 label 下的 acc
     print('acc_natural_label：')
     for i in acc_natural_label:
-        print('{:0f}'.format(i))
+        print('{}'.format(i))
 
     # 各 label 的 Rep 中心归一化，计算余弦相似度
     rep_norm = nn.functional.normalize(rep_label, dim=1)
