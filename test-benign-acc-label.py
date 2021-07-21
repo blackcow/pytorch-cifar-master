@@ -63,6 +63,7 @@ parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR10
 args = parser.parse_args()
 print(args)
 
+
 # 设定 GPU
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 best_acc = 0  # best test accuracy
@@ -124,7 +125,7 @@ def loadmodel_preactresnte(i, factor):
     # ST-keeplabel, CIFAR 10
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/kplabel/percent_0.1/'
     # CIFAR 100
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR100/kplabel/percent_1.0/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR100/kplabel/percent_0.5/'
     ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     if args.dataset == 'CIFAR10':
         num_classes = 10
@@ -194,7 +195,7 @@ def test(writer, net, model_name, epsilon):
                 label_test = 100
             if count % label_test == 0:
                     natural_acc = (1 - natural_err_total_label / label_test).cpu().numpy()
-                    acc_natural_label.append(natural_acc)
+                    acc_natural_label.append(natural_acc*100)
                     natural_err_total_label = 0
 
     # 输出各 label 下的 acc
