@@ -57,6 +57,9 @@ parser.add_argument('--epsilon', default=0.031, type=float, help='perturbation')
 parser.add_argument('--num-steps', default=20, help='perturb number of steps')
 parser.add_argument('--step-size', default=0.003, help='perturb step size')
 parser.add_argument('--random', default=True, help='random initialization for PGD')
+# test on dataset
+parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10'],
+                    help='train model on dataset')
 args = parser.parse_args()
 print(args)
 
