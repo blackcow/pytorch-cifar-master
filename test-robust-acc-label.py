@@ -264,8 +264,14 @@ def test(writer, net, model_name, epsilon):
     tmprep, _ = net(torch.zeros([20, 3, 32, 32]).cuda())
     _, C, H, W = tmprep.size()
     # center of the rep
-    rep_label = torch.zeros([10, C * H * W]).cuda()
-    rep_robust_label = torch.zeros([10, C * H * W]).cuda()
+    if args.dataset == 'CIFAR10':
+        label_test = 1000
+        rep_label = torch.zeros([10, C * H * W]).cuda()
+        rep_robust_label = torch.zeros([10, C * H * W]).cuda()
+    elif args.dataset == 'CIFAR100':
+        label_test = 100
+        rep_label = torch.zeros([100, C * H * W]).cuda()
+        rep_robust_label = torch.zeros([100, C * H * W]).cuda()
     rep_all = torch.zeros([C * H * W]).cuda()
     rep_pgd_all = torch.zeros([C * H * W]).cuda()
     i = 0
@@ -283,11 +289,6 @@ def test(writer, net, model_name, epsilon):
             rep_pgd_all = rep_pgd_all + rep_pgd.sum(dim=0)
             count = bs + count
             # 计算每个类别下的 err
-            # 计算每个类别下的 err
-            if args.dataset == 'CIFAR10':
-                label_test = 1000
-            elif args.dataset == 'CIFAR100':
-                label_test = 100
             if count % label_test == 0:
                 rep_label[i] = rep_all/label_test  # 计算 rep 中心
                 rep_robust_label[i] = rep_pgd_all/label_test
