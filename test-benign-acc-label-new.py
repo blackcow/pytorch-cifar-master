@@ -1,5 +1,5 @@
 '''Train CIFAR10 with PyTorch
-测试各 label 的 benign acc，不受限于个 label 的 data 数量
+测试各 label 的 benign acc，不受限于各 label 的 data 数量
 测试各 epoch=100 的 model
 绘制成图
 计算各 label 的特征中心，然后 label 特征中心的距离
@@ -213,7 +213,7 @@ def test(writer, net, model_name, epsilon):
             target = target1[idx]
             acc = (output == target).sum() / target.size * 100
             acc_natural_label.append(acc)
-            print(m)
+            # print(m)
 
     # 输出各 label 下的 acc
     print('acc_natural_label：')
