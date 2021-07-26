@@ -241,12 +241,12 @@ def main():
             # net = loadmodel(i, factor)
             net = loadmodel_preactresnte(i, factor)
             # net = loadmodel_preactresnte_cl(i, factor)
-            logits[i] = test(writer, net, 'model_name', factor[0])
+            test(writer, net, 'model_name', factor[0])
     else:
         raise Exception('this should never happen')
     # sum of the dis of the center rep
-    for m in range(model_num):
-        print('%.2f' % logits[m])
+    # for m in range(model_num):
+    #     print('%.2f' % logits[m])
     # for m in range(model_num):
     #     print('%.2f' % logits_robust[m])
 
