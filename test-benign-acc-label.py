@@ -35,6 +35,7 @@ from torch.autograd import Variable
 from time import time
 from torch.utils.tensorboard import SummaryWriter
 from torchsummaryX import summary
+from dataset.imagnette import *
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
@@ -58,7 +59,7 @@ parser.add_argument('--num-steps', default=20, help='perturb number of steps')
 parser.add_argument('--step-size', default=0.003, help='perturb step size')
 parser.add_argument('--random', default=True, help='random initialization for PGD')
 # test on dataset
-parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10'],
+parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10', 'Imagnette'],
                     help='train model on dataset')
 args = parser.parse_args()
 print(args)
@@ -85,7 +86,10 @@ if args.dataset == 'CIFAR10':
 elif args.dataset == 'CIFAR100':
     testset = cifar10my3.CIFAR100MY(root='../data', train=False, download=True, transform=transform_test, args=args)
     testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
-
+elif args.dataset == 'Imagnette':
+    testset = ImagenetteTrain('val')
+    # testset = ImagenetteTest()
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 
 cudnn.benchmark = True
 
@@ -125,12 +129,16 @@ def loadmodel_preactresnte(i, factor):
     # ST-keeplabel, CIFAR 10
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/kplabel/percent_0.1/'
     # CIFAR 100
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR100/kplabel/percent_0.5/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR100/kplabel/percent_0.5/'
+    # imagnette
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_Imagnette/kplabel_seed1/percent_1.0/'
     ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     if args.dataset == 'CIFAR10':
         num_classes = 10
     elif args.dataset == 'CIFAR100':
         num_classes = 100
+    elif args.dataset == 'Imagnette':
+        num_classes = 10
     net = nn.DataParallel(create_network(num_classes)).cuda()
     ckpt += ckpt_list[i]
     checkpoint = torch.load(ckpt)
@@ -139,6 +147,7 @@ def loadmodel_preactresnte(i, factor):
     net.eval()
     print(ckpt)
     return net
+
 
 def loadmodel_preactresnte_cl(i, factor):
     print('==> Building model..')
@@ -192,6 +201,8 @@ def test(writer, net, model_name, epsilon):
             if args.dataset == 'CIFAR10':
                 label_test = 1000
             elif args.dataset == 'CIFAR100':
+                label_test = 100
+            elif args.dataset == 'Imagnette':
                 label_test = 100
             if count % label_test == 0:
                     natural_acc = (1 - natural_err_total_label / label_test).cpu().numpy()
