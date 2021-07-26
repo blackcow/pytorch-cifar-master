@@ -67,6 +67,9 @@ print(args)
 
 # 设定 GPU
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+# a = torch.Tensor([1,2,3])
+# b = torch.Tensor([4,5])
+
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
@@ -90,7 +93,7 @@ elif args.dataset == 'CIFAR100':
 elif args.dataset == 'Imagnette':
     testset = ImagenetteTrain('val')
     # testset = ImagenetteTest()
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 
 cudnn.benchmark = True
 
@@ -186,12 +189,6 @@ def test(writer, net, model_name, epsilon):
     acc_natural_label = []
     target = []
     output = []
-    tmp = None
-    count = 0
-    tmprep, _ = net(torch.zeros([20, 3, 32, 32]).cuda())
-    _, C, H, W = tmprep.size()
-    # center of the rep
-    rep_label = torch.zeros([10, C * H * W]).cuda()
     with torch.no_grad():
         # for inputs, targets in testloader:
         for batch_idx, (inputs, targets) in enumerate(testloader):
@@ -203,10 +200,11 @@ def test(writer, net, model_name, epsilon):
             target.append(y)
 
         # 计算每个类别下的 err
-        output1 = torch.stack(output)
-        target1 = torch.stack(target)  # 100*100
-        output1 = output1.reshape(-1).cpu().numpy()
-        target1 = target1.reshape(-1).cpu().numpy()
+        output1 = torch.stack(output[:-1])
+        target1 = torch.stack(target[:-1])
+        # 最后一行可能不满一列的长度，单独 concat
+        output1 = torch.cat((output1.reshape(-1), output[-1]), dim=0).cpu().numpy()
+        target1 = torch.cat((target1.reshape(-1), target[-1]), dim=0).cpu().numpy()
 
         # 获取每个 label 的 out 和 target
         for m in np.unique(target1):
@@ -223,17 +221,7 @@ def test(writer, net, model_name, epsilon):
         print('{:.1f}'.format(i))
         # print("%d" % i)
 
-    # 各 label 的 Rep 中心归一化，计算余弦相似度
-    rep_norm = nn.functional.normalize(rep_label, dim=1)
-    logits = torch.mm(rep_norm, torch.transpose(rep_norm, 0, 1))  # [10,HW]*[HW,10]=[10,10]
-    logits = logits - torch.diag_embed(torch.diag(logits))  # 去掉对角线的 1
-    # logits = logits.abs().sum().cpu().numpy()
-    # 只统计 cos sim 大于 0 的
-    zero = torch.zeros_like(logits)
-    logits1 = torch.where(logits < 0, zero, logits)
-    logits1 = logits1.sum().cpu().numpy()
-    print('Sum distance of each label rep: {:.2f}'.format(logits1))
-    return logits1
+    return None
 
 
 def main():
