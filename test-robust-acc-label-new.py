@@ -201,7 +201,7 @@ def loadmodel_preactresnte(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR100/'
     # imagnette
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_Imagnette/kplabel_seed1/percent_1.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_Imagnette/seed1/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed1/'
     # SVHN
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_SVHN/kplabel_seed1/percent_0.1/'
     # ckpt_list = ['model-wideres-epoch100.pt', 'model-wideres-epoch100.pt']
@@ -286,7 +286,7 @@ def test(writer, net, model_name, epsilon, AT_method):
         output1_pgd = torch.cat((output1_pgd.reshape(-1), output_robust[-1]), dim=0).cpu().numpy()
         target1 = torch.cat((target1.reshape(-1), target[-1]), dim=0).cpu().numpy()
         avg_acc = (output1 == target).sum() / target.size * 100
-        avg_acc_robust = (output1_pgd == target).sum() / target.size * 100
+        avg_acc_robust = (output1_pgd == target1).sum() / target.size * 100
         # 获取每个 label 的 out 和 target
         for m in np.unique(target1):
             idx = [i for i, x in enumerate(target1) if x == m]
