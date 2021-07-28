@@ -1,6 +1,7 @@
 '''Train CIFAR10 with PyTorch
 测试 benign acc 和 robust acc（在各个 label 下）,不受限于各 label 的 data 数量
-仅测试，没有 rep 表示
+仅测试，没有 rep 表示.
+需要选择测试 model 为 AT 还是 ST，来确定 PGD attack 是否使用
 '''
 import torch
 import torch.nn as nn
@@ -269,7 +270,7 @@ def test(writer, net, model_name, epsilon, AT_method):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             X, y = Variable(inputs, requires_grad=True), Variable(targets)
-            out, rep, out_pgd, rep_pgd = _pgd_whitebox(net, X, y, AT_method, epsilon=epsilon)
+            out, rep, out_pgd, rep_pgd = _pgd_whitebox(net, X, y, epsilon=epsilon, AT_method=AT_method)
             output.append(out)
             output_robust.append(out_pgd)
             target.append(y)
