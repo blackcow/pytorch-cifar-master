@@ -278,23 +278,23 @@ def test(writer, net, model_name, epsilon, AT_method):
             target.append(y)
 
         # 计算每个类别下的 err
-        output1 = torch.stack(output[:-1])
-        output1_pgd = torch.stack(output_robust[:-1])
-        target1 = torch.stack(target[:-1])
+        output_tmp = torch.stack(output[:-1])
+        output_pgd_tmp = torch.stack(output_robust[:-1])
+        target_tmp = torch.stack(target[:-1])
         # 最后一行可能不满一列的长度，单独 concat
-        output1 = torch.cat((output1.reshape(-1), output[-1]), dim=0).cpu().numpy()
-        output1_pgd = torch.cat((output1_pgd.reshape(-1), output_robust[-1]), dim=0).cpu().numpy()
-        target1 = torch.cat((target1.reshape(-1), target[-1]), dim=0).cpu().numpy()
-        avg_acc = (output1 == target).sum() / target.size * 100
-        avg_acc_robust = (output1_pgd == target1).sum() / target.size * 100
+        output = torch.cat((output_tmp.reshape(-1), output[-1]), dim=0).cpu().numpy()
+        output_pgd = torch.cat((output_pgd_tmp.reshape(-1), output_robust[-1]), dim=0).cpu().numpy()
+        target = torch.cat((target_tmp.reshape(-1), target[-1]), dim=0).cpu().numpy()
+        avg_acc = (output == target).sum() / target.size * 100
+        avg_acc_robust = (output_pgd == target).sum() / target.size * 100
         # 获取每个 label 的 out 和 target
-        for m in np.unique(target1):
-            idx = [i for i, x in enumerate(target1) if x == m]
-            output = output1[idx]
-            output_pgd = output1_pgd[idx]
-            target = target1[idx]
-            acc = (output == target).sum() / target.size * 100
-            acc_robust = (output_pgd == target).sum() / target.size * 100
+        for m in np.unique(target):
+            idx = [i for i, x in enumerate(target) if x == m]
+            output_label = output[idx]
+            output_pgd_label = output_pgd[idx]
+            target_label = target[idx]
+            acc = (output_label == target_label).sum() / target_label.size * 100
+            acc_robust = (output_pgd_label == target_label).sum() / target_label.size * 100
             acc_natural_label.append(acc)
             acc_robust_label.append(acc_robust)
             # print(m)
