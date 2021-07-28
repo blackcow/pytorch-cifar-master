@@ -34,6 +34,7 @@ from torch.autograd import Variable
 from time import time
 from torch.utils.tensorboard import SummaryWriter
 from torchsummaryX import summary
+from dataset.imagnette import *
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--test-batch-size', type=int, default=64, metavar='N',
