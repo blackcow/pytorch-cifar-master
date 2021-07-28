@@ -283,7 +283,8 @@ def test(writer, net, model_name, epsilon, AT_method):
         output1 = torch.cat((output1.reshape(-1), output[-1]), dim=0).cpu().numpy()
         output1_pgd = torch.cat((output1_pgd.reshape(-1), output_robust[-1]), dim=0).cpu().numpy()
         target1 = torch.cat((target1.reshape(-1), target[-1]), dim=0).cpu().numpy()
-
+        avg_acc = (output1 == target).sum() / target.size * 100
+        avg_acc_robust = (output1_pgd == target).sum() / target.size * 100
         # 获取每个 label 的 out 和 target
         for m in np.unique(target1):
             idx = [i for i, x in enumerate(target1) if x == m]
@@ -301,11 +302,12 @@ def test(writer, net, model_name, epsilon, AT_method):
     for i in acc_natural_label:
         print('{:.1f}'.format(i))
         # print("%d" % i)
+    print('Avg_acc: {:.1f}'.format(avg_acc))
 
     print('acc_robust_label：')
     for i in acc_robust_label:
         print('{:.1f}'.format(i))
-
+    print('Avg_acc_robust: {:.1f}'.format(avg_acc_robust))
     return None
 
 
