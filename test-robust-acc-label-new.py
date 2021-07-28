@@ -62,6 +62,9 @@ parser.add_argument('--random', default=True, help='random initialization for PG
 # test on dataset
 parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10', 'Imagnette', 'SVHN'],
                     help='train model on dataset')
+# 选择测试 ST model 还是 AT
+parser.add_argument('--AT-method', type=str, default='ST',
+                    help='AT method', choices=['AT', 'ST'])
 args = parser.parse_args()
 print(args)
 
@@ -219,36 +222,39 @@ def loadmodel_preactresnte(i, factor):
     return net
 
 # PGD Attack
-def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args.step_size):
+def _pgd_whitebox(model, X, y, epsilon, AT_method, num_steps=args.num_steps, step_size=args.step_size, ):
     rep, out = model(X)
     N, C, H, W = rep.size()
     rep = rep.reshape([N, -1])
     out = out.data.max(1)[1]
-    X_pgd = Variable(X.data, requires_grad=True)
-    if args.random:
-        random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
-        X_pgd = Variable(X_pgd.data + random_noise, requires_grad=True)
+    if AT_method == 'ST':
+        return out, rep, out, rep
+    elif AT_method == 'AT':
+        X_pgd = Variable(X.data, requires_grad=True)
+        if args.random:
+            random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
+            X_pgd = Variable(X_pgd.data + random_noise, requires_grad=True)
 
-    for _ in range(num_steps):
-        opt = optim.SGD([X_pgd], lr=1e-3)
-        opt.zero_grad()
-        with torch.enable_grad():
-            loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
-        loss.backward()
-        eta = step_size * X_pgd.grad.data.sign()
-        X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
-        eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
-        X_pgd = Variable(X.data + eta, requires_grad=True)
-        X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
-    rep_pgd, out_pgd = model(X_pgd)
-    out_pgd = out_pgd.data.max(1)[1]
+        for _ in range(num_steps):
+            opt = optim.SGD([X_pgd], lr=1e-3)
+            opt.zero_grad()
+            with torch.enable_grad():
+                loss = nn.CrossEntropyLoss()(model(X_pgd)[1], y)
+            loss.backward()
+            eta = step_size * X_pgd.grad.data.sign()
+            X_pgd = Variable(X_pgd.data + eta, requires_grad=True)
+            eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
+            X_pgd = Variable(X.data + eta, requires_grad=True)
+            X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
+        rep_pgd, out_pgd = model(X_pgd)
+        out_pgd = out_pgd.data.max(1)[1]
 
-    rep_pgd = rep_pgd.reshape([N, -1])
-    return out, rep, out_pgd, rep_pgd
+        rep_pgd = rep_pgd.reshape([N, -1])
+        return out, rep, out_pgd, rep_pgd
 
 
 # input: tensorboard, model, model_name
-def test(writer, net, model_name, epsilon):
+def test(writer, net, model_name, epsilon, AT_method):
     global best_acc
     global best_epoch
 
@@ -263,7 +269,7 @@ def test(writer, net, model_name, epsilon):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             X, y = Variable(inputs, requires_grad=True), Variable(targets)
-            out, rep, out_pgd, rep_pgd = _pgd_whitebox(net, X, y, epsilon=epsilon)
+            out, rep, out_pgd, rep_pgd = _pgd_whitebox(net, X, y, AT_method, epsilon=epsilon)
             output.append(out)
             output_robust.append(out_pgd)
             target.append(y)
@@ -320,7 +326,7 @@ def main():
             net = loadmodel_preactresnte(i, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
-            test(writer, net, 'model_name', factor[0])
+            test(writer, net, 'model_name', factor[0], args.AT_method)
     else:
         raise Exception('this should never happen')
     # sum of the dis of the center rep
