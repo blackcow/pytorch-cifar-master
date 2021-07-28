@@ -37,6 +37,8 @@ from torchsummaryX import summary
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
 parser.add_argument('--gpu', default='0', type=str, help='GPUs id')
+parser.add_argument('--no-cuda', action='store_true', default=False,
+                    help='disables CUDA training')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 # Model facotrs
 parser.add_argument('--depth', type=int, default=34, metavar='N',

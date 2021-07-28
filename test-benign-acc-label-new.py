@@ -41,6 +41,8 @@ from dataset.imagnette import *
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
 parser.add_argument('--gpu', default='0', type=str, help='GPUs id')
+parser.add_argument('--no-cuda', action='store_true', default=False,
+                    help='disables CUDA training')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 # Model facotrs
 parser.add_argument('--depth', type=int, default=34, metavar='N',
@@ -81,6 +83,7 @@ transform_test = transforms.Compose([
     # 对于 TRADES 提供的 model 注释掉
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
+use_cuda = not args.no_cuda and torch.cuda.is_available()
 use_cuda = not args.no_cuda and torch.cuda.is_available()
 kwargs = {'num_workers': 4, 'pin_memory': True} if use_cuda else {}
 bs = 100
