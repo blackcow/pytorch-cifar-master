@@ -163,7 +163,7 @@ def loadmodel_preactresnte(i, factor):
     # ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
     print('==> Building model..')
     # AT preactresnet
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
 
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ICML-21
@@ -202,10 +202,9 @@ def loadmodel_preactresnte(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR100/'
     # imagnette
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_Imagnette/kplabel_seed1/percent_1.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed1/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_Imagnette/seed1/'
     # SVHN
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_SVHN/kplabel_seed1/percent_0.1/'
-    # ckpt_list = ['model-wideres-epoch100.pt', 'model-wideres-epoch100.pt']
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed1/'
     ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
 
