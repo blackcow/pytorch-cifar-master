@@ -297,7 +297,7 @@ def test(writer, net, model_name, epsilon):
 
     print('acc_robust_label：')
     for i in acc_robust_label:
-        print('{:3f}'.format(i))
+        print('{:.1f}'.format(i))
 
     return None
 
@@ -309,8 +309,8 @@ def main():
     # load model
     # 根据测试的 factor 选择对应的 model
     print('factors:', args.factors)
-    logits = [0, 0, 0]
-    logits_robust = [0, 0, 0]
+    # logits = [0, 0, 0]
+    # logits_robust = [0, 0, 0]
     model_num = 2
     if args.factors == 'model':
         for i in range(model_num):
@@ -320,14 +320,14 @@ def main():
             net = loadmodel_preactresnte(i, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
-            logits[i], logits_robust[i] = test(writer, net, 'model_name', factor[0])
+            test(writer, net, 'model_name', factor[0])
     else:
         raise Exception('this should never happen')
     # sum of the dis of the center rep
-    for m in range(model_num):
-        print('%.2f' % logits[m])
-    for m in range(model_num):
-        print('%.2f' % logits_robust[m])
+    # for m in range(model_num):
+    #     print('%.2f' % logits[m])
+    # for m in range(model_num):
+    #     print('%.2f' % logits_robust[m])
 
     writer.close()
     end = time()
