@@ -58,7 +58,7 @@ parser.add_argument('--num-steps', default=20, help='perturb number of steps')
 parser.add_argument('--step-size', default=0.003, help='perturb step size')
 parser.add_argument('--random', default=True, help='random initialization for PGD')
 # test on dataset
-parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10'],
+parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10', 'Imagnette', 'SVHN'],
                     help='train model on dataset')
 args = parser.parse_args()
 print(args)
@@ -186,9 +186,14 @@ def loadmodel_preactresnte(i, factor):
 
     # CIFAR 100, TRADES
     ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR100/'
-    ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    # imagnette
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_Imagnette/kplabel_seed1/percent_1.0/'
+    # SVHN
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_SVHN/kplabel_seed1/percent_0.1/'
+    ckpt_list = ['model-wideres-epoch100.pt', 'model-wideres-epoch100.pt']
+    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
 
-    if args.dataset == 'CIFAR10':
+    if args.dataset == 'CIFAR10' or 'STL10' or 'Imagnette' or 'SVHN':
         num_classes = 10
     elif args.dataset == 'CIFAR100':
         num_classes = 100
@@ -225,7 +230,7 @@ def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args
     rep, out = model(X)
     N, C, H, W = rep.size()
     rep = rep.reshape([N, -1])
-    err = (out.data.max(1)[1] != y.data).float().sum()
+    out = out.data.max(1)[1]
     X_pgd = Variable(X.data, requires_grad=True)
     if args.random:
         random_noise = torch.FloatTensor(*X_pgd.shape).uniform_(-epsilon, epsilon).cuda()
@@ -243,11 +248,10 @@ def _pgd_whitebox(model, X, y, epsilon, num_steps=args.num_steps, step_size=args
         X_pgd = Variable(X.data + eta, requires_grad=True)
         X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
     rep_pgd, out_pgd = model(X_pgd)
-    err_pgd = (out_pgd.data.max(1)[1] != y.data).float().sum()
+    out_pgd = out_pgd.data.max(1)[1]
 
     rep_pgd = rep_pgd.reshape([N, -1])
-    return err, err_pgd, rep, rep_pgd
-    # return err, err, rep
+    return out, rep, out_pgd, rep_pgd
 
 
 # input: tensorboard, model, model_name
