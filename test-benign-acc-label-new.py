@@ -100,7 +100,7 @@ elif args.dataset == 'Imagnette':
     testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 elif args.dataset == 'SVHN':
     testset = torchvision.datasets.SVHN(root='../data', split="test", download=True, transform=transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=args.test_batch_size, shuffle=False, **kwargs)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, **kwargs)
 
 cudnn.benchmark = True
 

@@ -35,6 +35,8 @@ from torch.utils.tensorboard import SummaryWriter
 from torchsummaryX import summary
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+parser.add_argument('--test-batch-size', type=int, default=64, metavar='N',
+                    help='input batch size for testing (default: 128)')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
 parser.add_argument('--gpu', default='0', type=str, help='GPUs id')
 parser.add_argument('--no-cuda', action='store_true', default=False,
@@ -79,7 +81,7 @@ transform_test = transforms.Compose([
 
 use_cuda = not args.no_cuda and torch.cuda.is_available()
 kwargs = {'num_workers': 4, 'pin_memory': True} if use_cuda else {}
-bs = 100
+bs = args.test_batch_size
 if args.dataset == 'CIFAR10':
     testset = cifar10my3.CIFAR10MY(root='../data', train=False, download=True, transform=transform_test, args=args)
     testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
@@ -92,7 +94,7 @@ elif args.dataset == 'Imagnette':
     testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 elif args.dataset == 'SVHN':
     testset = torchvision.datasets.SVHN(root='../data', split="test", download=True, transform=transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=args.test_batch_size, shuffle=False, **kwargs)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, **kwargs)
 cudnn.benchmark = True
 
 
