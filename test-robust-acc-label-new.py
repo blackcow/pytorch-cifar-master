@@ -75,7 +75,8 @@ transform_test = transforms.Compose([
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-# bs = 20
+use_cuda = not args.no_cuda and torch.cuda.is_available()
+kwargs = {'num_workers': 4, 'pin_memory': True} if use_cuda else {}
 bs = 100
 if args.dataset == 'CIFAR10':
     testset = cifar10my3.CIFAR10MY(root='../data', train=False, download=True, transform=transform_test, args=args)
