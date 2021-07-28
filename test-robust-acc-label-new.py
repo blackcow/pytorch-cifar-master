@@ -1,8 +1,6 @@
 '''Train CIFAR10 with PyTorch
-调整 factor，测试各 epoch=76 的 model
 测试 benign acc 和 robust acc（在各个 label 下）,不受限于各 label 的 data 数量
-绘制成图
-计算各 label 的特征中心，然后 label 特征中心的距离
+仅测试，没有 rep 表示
 '''
 import torch
 import torch.nn as nn
@@ -85,7 +83,13 @@ if args.dataset == 'CIFAR10':
 elif args.dataset == 'CIFAR100':
     testset = cifar10my3.CIFAR100MY(root='../data', train=False, download=True, transform=transform_test, args=args)
     testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
-
+elif args.dataset == 'Imagnette':
+    testset = ImagenetteTrain('val')
+    # testset = ImagenetteTest()
+    testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
+elif args.dataset == 'SVHN':
+    testset = torchvision.datasets.SVHN(root='../data', split="test", download=True, transform=transform_test)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=args.test_batch_size, shuffle=False, **kwargs)
 cudnn.benchmark = True
 
 
