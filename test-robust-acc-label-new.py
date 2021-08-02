@@ -108,7 +108,7 @@ elif args.dataset == 'ImageNet10':
     traindir = '../data/ilsvrc2012/train'
     valdir = '../data/ilsvrc2012/val'
     val = torchvision.datasets.ImageFolder(valdir, transform_train_Imagenet10)
-    test_loader = torch.utils.data.DataLoader(val, batch_size=args.test_batch_size, shuffle=False, num_workers=4)
+    testloader = torch.utils.data.DataLoader(val, batch_size=args.test_batch_size, shuffle=False, num_workers=4)
 cudnn.benchmark = True
 
 
