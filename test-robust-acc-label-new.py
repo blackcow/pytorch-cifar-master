@@ -62,7 +62,7 @@ parser.add_argument('--num-steps', default=20, help='perturb number of steps')
 parser.add_argument('--step-size', default=0.003, help='perturb step size')
 parser.add_argument('--random', default=True, help='random initialization for PGD')
 # test on dataset
-parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10', 'Imagnette', 'SVHN'],
+parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10', 'Imagnette', 'SVHN', 'ImageNet10'],
                     help='train model on dataset')
 # 选择测试 ST model 还是 AT
 parser.add_argument('--AT-method', type=str, default='ST',
@@ -83,7 +83,11 @@ transform_test = transforms.Compose([
     # 对于 TRADES 提供的 model 注释掉
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
-
+transform_train_Imagenet10 = transforms.Compose([
+    # transforms.RandomResizedCrop(224),
+    transforms.Resize([96, 96]),
+    transforms.ToTensor(),
+])
 use_cuda = not args.no_cuda and torch.cuda.is_available()
 kwargs = {'num_workers': 4, 'pin_memory': True} if use_cuda else {}
 bs = args.test_batch_size
@@ -100,6 +104,11 @@ elif args.dataset == 'Imagnette':
 elif args.dataset == 'SVHN':
     testset = torchvision.datasets.SVHN(root='../data', split="test", download=True, transform=transform_test)
     testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, **kwargs)
+elif args.dataset == 'ImageNet10':
+    traindir = '../data/ilsvrc2012/train'
+    valdir = '../data/ilsvrc2012/val'
+    val = torchvision.datasets.ImageFolder(valdir, transform_train_Imagenet10)
+    test_loader = torch.utils.data.DataLoader(val, batch_size=args.test_batch_size, shuffle=False, num_workers=4)
 cudnn.benchmark = True
 
 
@@ -165,7 +174,7 @@ def loadmodel_preactresnte(i, factor):
     print('==> Building model..')
     # AT preactresnet
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR10/seed1/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR10/seed1/'
 
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
     # ICML-21
@@ -208,9 +217,10 @@ def loadmodel_preactresnte(i, factor):
     # SVHN
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_SVHN/kplabel_seed1/percent_0.01/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed1/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/'
     ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
 
-    if args.dataset == 'CIFAR10' or 'STL10' or 'Imagnette' or 'SVHN':
+    if args.dataset == 'CIFAR10' or 'STL10' or 'Imagnette' or 'SVHN' or 'ImageNet10':
         num_classes = 10
     elif args.dataset == 'CIFAR100':
         num_classes = 100
