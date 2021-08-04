@@ -27,8 +27,7 @@ def trades_loss(model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, 
             with torch.enable_grad():
                 _, out_adv = model(x_adv)
                 _, out_nat = model(x_natural)
-                loss_kl = criterion_kl(F.log_softmax(out_adv, dim=1),
-                                       F.softmax(out_nat, dim=1))
+                loss_kl = criterion_kl(F.log_softmax(out_adv, dim=1), F.softmax(out_nat, dim=1))
             grad = torch.autograd.grad(loss_kl, [x_adv])[0]
 
             # loss_kl.backward()
@@ -120,6 +119,7 @@ def boundary_loss_test(model, x_natural, y, optimizer=None, step_size=0.003, eps
     return loss_natural, loss_robust
 
 # 针对特定 label 的 adv 做 augment（或者 perturb_steps，step_size 等超参数变化做 aug）
+# [2,3,4,5] 额外生成新的 adv data
 def trades_loss_aug(model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0, distance='l_inf'):
     # train (perturb_steps=10，step_size=0.007)，test (20，0.003)
     # define KL-loss
@@ -128,8 +128,14 @@ def trades_loss_aug(model, x_natural, y, optimizer, step_size=0.003, epsilon=0.0
     batch_size = len(x_natural)
     # generate adversarial example
     x_adv = x_natural.detach() + 0.001 * torch.randn(x_natural.shape).cuda().detach()
-    x_natural_aug = x_natural[0]
-    x_adv_aug = x_natural.detach() + 0.001 * torch.randn(x_natural.shape).cuda().detach()
+    # 找特定 label 的 idx
+    idx = []
+    for i in [2, 3, 4, 5]:
+        idx.append((y == i).nonzero().flatten())
+        # idx.cuda()
+    idx = torch.cat(idx)
+    x_natural_aug = torch.index_select(x_natural, 0, idx)
+    x_adv_aug = x_natural_aug.detach() + 0.001 * torch.randn(x_natural_aug.shape).cuda().detach()
     if distance == 'l_inf':
         for _ in range(perturb_steps):
             x_adv.requires_grad_()
@@ -151,16 +157,16 @@ def trades_loss_aug(model, x_natural, y, optimizer, step_size=0.003, epsilon=0.0
         for _ in range(perturb_steps):
             x_adv_aug.requires_grad_()
             with torch.enable_grad():
-                _, out_adv = model(x_adv_aug)
-                _, out_nat = model(x_natural)
-                loss_kl = criterion_kl(F.log_softmax(out_adv, dim=1), F.softmax(out_nat, dim=1))
+                _, out_adv_aug = model(x_adv_aug)
+                _, out_nat_aug = model(x_natural_aug)
+                loss_kl = criterion_kl(F.log_softmax(out_adv_aug, dim=1), F.softmax(out_nat_aug, dim=1))
             grad = torch.autograd.grad(loss_kl, [x_adv_aug])[0]
 
             # loss_kl.backward()
             # grad = x_adv_aug.grad
 
             x_adv_aug = x_adv_aug.detach() + step_size * torch.sign(grad.detach())
-            x_adv_aug = torch.min(torch.max(x_adv_aug, x_natural - epsilon), x_natural + epsilon)
+            x_adv_aug = torch.min(torch.max(x_adv_aug, x_natural_aug - epsilon), x_natural_aug + epsilon)
             x_adv_aug = torch.clamp(x_adv_aug, 0.0, 1.0)
     model.train()
 
@@ -172,11 +178,12 @@ def trades_loss_aug(model, x_natural, y, optimizer, step_size=0.003, epsilon=0.0
     optimizer.zero_grad()
     # calculate robust loss
     _, logits_x = model(x_natural)
+    logits_x_aug = torch.index_select(logits_x, 0, idx)
     _, logits_adv = model(x_adv)
     _, logits_adv_aug = model(x_adv_aug)
-    logits_x_aug = logits_x[0]
+
     loss_natural = F.cross_entropy(logits_x, y)
     loss_robust = (1.0 / batch_size) * criterion_kl(F.log_softmax(logits_adv, dim=1), F.softmax(logits_x, dim=1))
-    loss_robust_aug = (1.0 / batch_size) * criterion_kl(F.log_softmax(logits_adv_aug, dim=1), F.softmax(logits_x, dim=1))
+    loss_robust_aug = (1.0 / len(idx)) * criterion_kl(F.log_softmax(logits_adv_aug, dim=1), F.softmax(logits_x_aug, dim=1))
     loss = loss_natural + beta * loss_robust + beta * loss_robust_aug
     return loss
