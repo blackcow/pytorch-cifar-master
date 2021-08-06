@@ -86,8 +86,8 @@ def robust_loss_test(model, x_natural, y, optimizer=None, step_size=0.003, epsil
     # loss_robust = (1.0 / batch_size) * criterion_kl(F.log_softmax(logits_adv, dim=1), F.softmax(logits_x, dim=1))
     # loss_robust = criterion_kl(F.log_softmax(logits_adv, dim=1), F.softmax(logits_x, dim=1))
     # loss = loss_natural + beta * loss_robust
-    # return loss_natural, loss_robust
-    return loss_robust_pgd, loss_robust
+    return loss_natural, loss_robust
+    # return loss_robust_pgd, loss_robust
 
 def _pgd_whitebox(model, X, y, epsilon, AT_method, num_steps, step_size):
     rep, out = model(X)
