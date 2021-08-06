@@ -34,7 +34,7 @@ from time import time
 from torch.utils.tensorboard import SummaryWriter
 from torchsummaryX import summary
 from dataset.imagnette import *
-from trades import *
+from trades-loss import boundary_loss_test, robust_loss_test
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--test-batch-size', type=int, default=100, metavar='N',
@@ -215,11 +215,11 @@ def test(writer, net, model_name, epsilon, AT_method):
         for batch_idx, (inputs, targets) in enumerate(dataloader):
             inputs, targets = inputs.cuda(), targets.cuda()
 
-            X, y = Variable(inputs, requires_grad=True), Variable(targets)
-            out, rep, out_pgd, rep_pgd = _pgd_whitebox(net, X, y, epsilon=epsilon, AT_method=AT_method)
-            output.append(out)
-            output_robust.append(out_pgd)
-            target.append(y)
+            # X, y = Variable(inputs, requires_grad=True), Variable(targets)
+            # out, rep, out_pgd, rep_pgd = _pgd_whitebox(net, X, y, epsilon=epsilon, AT_method=AT_method)
+            # output.append(out)
+            # output_robust.append(out_pgd)
+            # target.append(y)
 
             # 计算每个样本的 nature_loss 和 boundary_loss
             # nature_loss_batch, boundary_loss_batch = boundary_loss_test(model=net, x_natural=inputs, y=targets,
@@ -246,39 +246,39 @@ def test(writer, net, model_name, epsilon, AT_method):
         print('boundary_loss_label：')
         for i in boundary_loss_label:
             print('{:.3f}'.format(i))
-        # 计算每个类别下的 err
-        output_tmp = torch.stack(output[:-1])
-        output_pgd_tmp = torch.stack(output_robust[:-1])
-        target_tmp = torch.stack(target[:-1])
-        # 最后一行可能不满一列的长度，单独 concat
-        output = torch.cat((output_tmp.reshape(-1), output[-1]), dim=0).cpu().numpy()
-        output_pgd = torch.cat((output_pgd_tmp.reshape(-1), output_robust[-1]), dim=0).cpu().numpy()
-        target = torch.cat((target_tmp.reshape(-1), target[-1]), dim=0).cpu().numpy()
-        avg_acc = (output == target).sum() / target.size * 100
-        avg_acc_robust = (output_pgd == target).sum() / target.size * 100
-        # 获取每个 label 的 out 和 target
-        for m in np.unique(target):
-            idx = [i for i, x in enumerate(target) if x == m]
-            output_label = output[idx]
-            output_pgd_label = output_pgd[idx]
-            target_label = target[idx]
-            acc = (output_label == target_label).sum() / target_label.size * 100
-            acc_robust = (output_pgd_label == target_label).sum() / target_label.size * 100
-            acc_natural_label.append(acc)
-            acc_robust_label.append(acc_robust)
-            # print(m)
-
-    # 输出各 label 下的 acc
-    print('acc_natural_label：')
-    for i in acc_natural_label:
-        print('{:.1f}'.format(i))
-        # print("%d" % i)
-    print('Avg_acc: {:.1f}'.format(avg_acc))
-
-    print('acc_robust_label：')
-    for i in acc_robust_label:
-        print('{:.1f}'.format(i))
-    print('Avg_acc_robust: {:.1f}'.format(avg_acc_robust))
+    #     # 计算每个类别下的 err
+    #     output_tmp = torch.stack(output[:-1])
+    #     output_pgd_tmp = torch.stack(output_robust[:-1])
+    #     target_tmp = torch.stack(target[:-1])
+    #     # 最后一行可能不满一列的长度，单独 concat
+    #     output = torch.cat((output_tmp.reshape(-1), output[-1]), dim=0).cpu().numpy()
+    #     output_pgd = torch.cat((output_pgd_tmp.reshape(-1), output_robust[-1]), dim=0).cpu().numpy()
+    #     target = torch.cat((target_tmp.reshape(-1), target[-1]), dim=0).cpu().numpy()
+    #     avg_acc = (output == target).sum() / target.size * 100
+    #     avg_acc_robust = (output_pgd == target).sum() / target.size * 100
+    #     # 获取每个 label 的 out 和 target
+    #     for m in np.unique(target):
+    #         idx = [i for i, x in enumerate(target) if x == m]
+    #         output_label = output[idx]
+    #         output_pgd_label = output_pgd[idx]
+    #         target_label = target[idx]
+    #         acc = (output_label == target_label).sum() / target_label.size * 100
+    #         acc_robust = (output_pgd_label == target_label).sum() / target_label.size * 100
+    #         acc_natural_label.append(acc)
+    #         acc_robust_label.append(acc_robust)
+    #         # print(m)
+    #
+    # # 输出各 label 下的 acc
+    # print('acc_natural_label：')
+    # for i in acc_natural_label:
+    #     print('{:.1f}'.format(i))
+    #     # print("%d" % i)
+    # print('Avg_acc: {:.1f}'.format(avg_acc))
+    #
+    # print('acc_robust_label：')
+    # for i in acc_robust_label:
+    #     print('{:.1f}'.format(i))
+    # print('Avg_acc_robust: {:.1f}'.format(avg_acc_robust))
     return None
 
 
