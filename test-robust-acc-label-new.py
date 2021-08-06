@@ -219,9 +219,12 @@ def loadmodel_preactresnte(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed3/'
     # ImageNet 10
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/'
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed1/percent_0.1/'
-    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    ckpt_list = ['model-wideres-epoch100.pt', 'model-wideres-epoch100.pt']
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed1/percent_0.1/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/rmlabel_0/seed1/'
+    # TRADES_adv aug
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_CIFAR10/seed4/'
+    ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
+    # ckpt_list = ['model-wideres-epoch100.pt', 'model-wideres-epoch100.pt']
 
     if args.dataset == 'CIFAR10' or 'STL10' or 'Imagnette' or 'SVHN' or 'ImageNet10':
         num_classes = 10

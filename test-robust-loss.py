@@ -34,7 +34,7 @@ from time import time
 from torch.utils.tensorboard import SummaryWriter
 from torchsummaryX import summary
 from dataset.imagnette import *
-from trades import boundary_loss_test
+from trades import *
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--test-batch-size', type=int, default=100, metavar='N',
@@ -140,9 +140,9 @@ def loadmodel_preactresnte(i, factor):
     # ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
     print('==> Building model..')
     # CIFAR 10
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR10/seed1/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR10/seed1/'
     # ImageNet 10
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed1/percent_0.1/'
     # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     ckpt_list = ['model-wideres-epoch76.pt']
@@ -222,10 +222,14 @@ def test(writer, net, model_name, epsilon, AT_method):
             target.append(y)
 
             # 计算每个样本的 nature_loss 和 boundary_loss
-            nature_loss_batch, boundary_loss_batch = boundary_loss_test(model=net, x_natural=inputs, y=targets,
-                                                                      optimizer=None, step_size=args.step_size,
-                                                                      epsilon=args.epsilon,
-                                                                      perturb_steps=args.num_steps, beta=args.beta)
+            # nature_loss_batch, boundary_loss_batch = boundary_loss_test(model=net, x_natural=inputs, y=targets,
+            #                                                           optimizer=None, step_size=args.step_size,
+            #                                                           epsilon=args.epsilon,
+            #                                                           perturb_steps=args.num_steps, beta=args.beta)
+            nature_loss_batch, boundary_loss_batch = robust_loss_test(model=net, x_natural=inputs, y=targets,
+                                                                        optimizer=None, step_size=args.step_size,
+                                                                        epsilon=args.epsilon,
+                                                                        perturb_steps=args.num_steps, beta=args.beta)
             nature_loss += nature_loss_batch
             boundary_loss += boundary_loss_batch
             num += len(targets)
