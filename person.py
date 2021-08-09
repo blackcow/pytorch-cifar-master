@@ -29,7 +29,21 @@ if __name__ == '__main__':
     #
     # val = pearson(v1, v2)
     # print(val)
+    s= 'abcda'
 
-    queue = [(1, 2), (3,4)]
-    r1, r2 = queue.pop(0)
-    print()
+    occ = set()
+    ans = 0
+    idx_right = -1
+    start = 0
+    length = len(s)
+
+    for start in range(length):
+
+        if start != 0:
+            occ.remove(s[start - 1])
+
+        while idx_right < length and s[idx_right + 1] not in occ:
+            occ.add(s[idx_right])
+            idx_right += 1
+        ans = max(ans, idx_right - start - 1)
+    print(ans)

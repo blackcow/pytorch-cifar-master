@@ -219,10 +219,12 @@ def loadmodel_preactresnte(i, factor):
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed3/'
     # ImageNet 10
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed1/percent_0.1/'
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/rmlabel_0/seed1/'
-    # TRADES_adv aug
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_CIFAR10/seed4/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed5/percent_0.05/'
+
+    # Adv aug
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_CIFAR10/seed5/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgd_CIFAR10/seed5/'
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgdattk_CIFAR10/seed1/'
     ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
     # ckpt_list = ['model-wideres-epoch100.pt', 'model-wideres-epoch100.pt']
 
