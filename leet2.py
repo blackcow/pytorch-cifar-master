@@ -76,6 +76,27 @@ def threeSum2(nums):
                 L = L + 1
     return res
 
+class ListNode(object):
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def mergeTwoLists(l1, l2):
+        """
+        :type l1: ListNode
+        :type l2: ListNode
+        :rtype: ListNode
+        """
+        start = ListNode()
+        start_c = start
+        if l1.val <= l2.val:
+            start.next = mergeTwoLists(l1.next, l2)
+            start = start.next
+        else:
+            start.next = mergeTwoLists(l1, l2.next)
+            start = start.next
+        return start_c.next
+
 if __name__ == '__main__':
     # nums = [3, 2, 4]
     # target = 6
@@ -84,5 +105,9 @@ if __name__ == '__main__':
     # nums = [-1,0,1,2,-1,-4]
 
     # a = twoSum2(nums, target)
-    ans = threeSum2(nums)
-    print(ans)
+    # ans = threeSum2(nums)
+
+    l1 = [0,1,2]
+    l2 = [0,1,3]
+    a= mergeTwoLists(l1,l2)
+    print()
