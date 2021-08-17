@@ -159,7 +159,8 @@ def plot_embedding(data, label, title):
         plt.plot(data[i, 0], data[i, 1])
     if not os.path.exists("./img"):
         os.mkdir('./img')
-    plt.savefig("./img/"+ title + ".png")
+    img_title = "./img/"+ title + ".png"
+    plt.savefig(img_title, dpi=300)
     plt.show()
     return fig
 
