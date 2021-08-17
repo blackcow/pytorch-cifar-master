@@ -1,5 +1,6 @@
 '''Train CIFAR10 with PyTorch
 load 模型 test 指标，进行 T-SNE 可视化
+可以 load 全部 data，然后可视化
 '''
 import torch
 import torch.nn as nn
@@ -33,6 +34,10 @@ parser.add_argument('--dele', default=3, type=int, help='Label of the deleted tr
 parser.add_argument('--percent', default=0.1, type=float, help='Percentage of deleted data')
 parser.add_argument('--gpu', default='0', type=str, help='GPUs id')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
+
+parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10', 'Imagnette', 'SVHN', 'ImageNet10'], help='train model on dataset')
+parser.add_argument('--test-batch-size', type=int, default=64, metavar='N',
+                    help='input batch size for testing (default: 128)')
 args = parser.parse_args()
 print(args)
 
@@ -50,13 +55,34 @@ transform_test = transforms.Compose([
     # 对于 TRADES 注释掉
     # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
+transform_train_Imagenet10 = transforms.Compose([
+    # transforms.RandomResizedCrop(224),
+    # transforms.Resize([96, 96]),
+    transforms.Resize([224, 224]),
+    transforms.ToTensor(),
+])
+use_cuda = torch.cuda.is_available()
+kwargs = {'num_workers': 4, 'pin_memory': True} if use_cuda else {}
+bs = args.test_batch_size
 
-bs = 1000
-# bs = 100
-testset = torchvision.datasets.CIFAR10(
-    root='../data', train=False, download=True, transform=transform_test)
-testloader = torch.utils.data.DataLoader(
-    testset, batch_size=bs, shuffle=False, num_workers=2)
+if args.dataset == 'CIFAR10':
+    testset = torchvision.datasets.CIFAR10(root='../data', train=False, download=True, transform=transform_test, args=args)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
+# elif args.dataset == 'CIFAR100':
+#     testset = cifar10my3.CIFAR100MY(root='../data', train=False, download=True, transform=transform_test, args=args)
+#     testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, num_workers=2)
+# elif args.dataset == 'Imagnette':
+#     testset = ImagenetteTrain('val')
+#     # testset = ImagenetteTest()
+#     testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
+elif args.dataset == 'SVHN':
+    testset = torchvision.datasets.SVHN(root='../data', split="test", download=True, transform=transform_test)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=bs, shuffle=False, **kwargs)
+elif args.dataset == 'ImageNet10':
+    traindir = '../data/ilsvrc2012/train'
+    valdir = '../data/ilsvrc2012/val'
+    val = torchvision.datasets.ImageFolder(valdir, transform_train_Imagenet10)
+    testloader = torch.utils.data.DataLoader(val, batch_size=args.test_batch_size, shuffle=False, num_workers=4)
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck')
@@ -90,12 +116,23 @@ print('==> Building model..')
 # ckpt += 'model-wideres-epoch100.pt'
 
 # ICML-21
-ckpt = '../Robust-Fair/cifar10/models-preactresnet/fair1/trade_120_1.0.pt'
+# ckpt = '../Robust-Fair/cifar10/models-preactresnet/fair1/trade_120_1.0.pt'
+
+# ST ImageNet-10
+ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed1/percent_1.0/model-wideres-epoch100.pt'
+# AT ImageNet-10
+# ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/model-wideres-epoch76.pt'
+# ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed2/model-wideres-epoch76.pt'
 
 # net = WideResNet().cuda()
 # net = nn.DataParallel(WideResNet()).cuda()
 # net = nn.DataParallel(create_network()).cuda()
-net = create_network().cuda() #ICML-21
+if args.dataset == 'CIFAR10' or 'STL10' or 'Imagnette' or 'SVHN' or 'ImageNet10':
+    num_classes = 10
+elif args.dataset == 'CIFAR100':
+    num_classes = 100
+
+net = nn.DataParallel(create_network(num_classes)).cuda()
 net.load_state_dict(torch.load(ckpt))
 net.eval()
 print(ckpt)
@@ -127,12 +164,15 @@ def test():
     test_loss = 0
     correct = 0
     total = 0
+    rep = []
+    y = []
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.cuda(), targets.cuda()
             out4, outputs = net(inputs)
-            out4 = out4.reshape(bs, -1)
-
+            out4 = out4.reshape(len(inputs), -1)
+            rep.append(out4)
+            y.append(targets)
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
@@ -140,22 +180,24 @@ def test():
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
-            # T-sne 可视化
-            # tsne = TSNE(n_components=2, perplexity=50, early_exaggeration=100, init='pca', random_state=0)
-            tsne = TSNE(n_components=2, init='pca', random_state=0)
-            t0 = time()
-            out4 = out4.cpu().numpy()
-            targets = targets.cpu().numpy()
+        # T-sne 可视化
+        rep = torch.cat(rep)
+        y = torch.cat(y)
+        rep = rep.cpu().numpy()
+        y = y.cpu().numpy()
+        # tsne = TSNE(n_components=2, perplexity=50, early_exaggeration=100, init='pca', random_state=0)
+        tsne = TSNE(n_components=2, init='pca', random_state=0)
+        t0 = time()
 
-            result = tsne.fit_transform(out4)
-            fig = plot_embedding(result, targets, 't-SNE embedding of the CIFAR-10 (time %.2fs)' % (time() - t0))
-            break
+
+        result = tsne.fit_transform(rep)
+        fig = plot_embedding(result, y, 't-SNE embedding of the CIFAR-10 (time %.2fs)' % (time() - t0))
     # Save checkpoint.
     acc = 100.*correct/total
     return acc
 
-test()
-
+acc = test()
+print(acc)
 
 # print("model best acc：%f ,epoch %d" % (best_acc, best_epoch))
 # print(args)
