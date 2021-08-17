@@ -3,6 +3,7 @@ load 模型 test 指标，进行 T-SNE 可视化
 可以 load 全部 data，然后可视化
 '''
 # python main-TSNE.py -dataset ImageNet10
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -58,8 +59,8 @@ transform_test = transforms.Compose([
 ])
 transform_train_Imagenet10 = transforms.Compose([
     # transforms.RandomResizedCrop(224),
-    # transforms.Resize([96, 96]),
-    transforms.Resize([224, 224]),
+    transforms.Resize([96, 96]),
+    # transforms.Resize([224, 224]),
     transforms.ToTensor(),
 ])
 use_cuda = torch.cuda.is_available()
@@ -121,9 +122,12 @@ print('==> Building model..')
 
 # ST ImageNet-10
 # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed1/percent_1.0/model-wideres-epoch100.pt'
+# ST el
 # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_CIFAR10/seed1/model-wideres-epoch100.pt'
+# ST
+ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/rmlabel_0/percent_0.0/model-wideres-epoch100.pt'
 # AT ImageNet-10
-ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/model-wideres-epoch76.pt'
+# ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/model-wideres-epoch76.pt'
 # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed2/model-wideres-epoch76.pt'
 title = 'ST_el_CIFAR10_seed1'
 # net = WideResNet().cuda()
@@ -184,7 +188,8 @@ def test():
             # 绘制部分 test data 的分布，暂定 10 个 batch
             # if len(y) > 10:
             #     break
-
+        acc = 100. * correct / total
+        print(acc)
         # T-sne 可视化
         rep = torch.cat(rep)
         y = torch.cat(y)
@@ -197,13 +202,13 @@ def test():
 
         result = tsne.fit_transform(rep)
         # fig = plot_embedding(result, y, 't-SNE embedding of the CIFAR-10 (time %.2fs)' % (time() - t0))
-        # fig = plot_embedding(result, y, title)
+        fig = plot_embedding(result, y, title)
     # Save checkpoint.
-    acc = 100.*correct/total
+
     return acc
 
 acc = test()
-print(acc)
+# print(acc)
 
 # print("model best acc：%f ,epoch %d" % (best_acc, best_epoch))
 # print(args)
