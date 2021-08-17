@@ -217,19 +217,24 @@ def loadmodel_preactresnte(i, factor):
     # SVHN
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_SVHN/kplabel_seed1/percent_0.01/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed3/'
+
     # ImageNet 10
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed5/percent_0.05/'
-
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/rmlabel_9/seed1/'
     # ST aug
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_adp_CIFAR10/seed1/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_adp_CIFAR10/seed5/'
+    # ST el
+    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_CIFAR10/seed1/'
     # Adv aug
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_CIFAR10/seed5/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_CIFAR10/seed3/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgd_CIFAR10/seed5/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgdattk_CIFAR10/seed1/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_loss_adp_CIFAR10/seed3/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_loss_adp_CIFAR10/seed8/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_augmulti_CIFAR10/seed3/'
+    # ckpt='../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ST_adp_CIFAR10/seed2/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgdattk2_CIFAR10/seed5/'
     ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    # ckpt_list = ['model-wideres-epoch100.pt', 'model-wideres-epoch100.pt']
 
     if args.dataset == 'CIFAR10' or 'STL10' or 'Imagnette' or 'SVHN' or 'ImageNet10':
         num_classes = 10
