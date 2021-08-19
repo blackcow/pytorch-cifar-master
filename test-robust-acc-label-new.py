@@ -67,6 +67,7 @@ parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR10
 # 选择测试 ST model 还是 AT
 parser.add_argument('--AT-method', type=str, default='ST',
                     help='AT method', choices=['AT', 'ST'])
+parser.add_argument('--ckpt', type=str, default='', help='model dir')
 args = parser.parse_args()
 print(args)
 
@@ -168,7 +169,7 @@ def loadmodel(i, factor):
     return net
 
 
-def loadmodel_preactresnte(i, factor):
+def loadmodel_preactresnte(i, ckpt, factor):
     # Model
     # ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
     print('==> Building model..')
@@ -225,7 +226,7 @@ def loadmodel_preactresnte(i, factor):
     # ST aug
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_adp_CIFAR10/seed5/'
     # ST el
-    ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_CIFAR10/seed1/'
+    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_CIFAR10/seed1/'
     # Adv aug
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_CIFAR10/seed3/'
     # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgd_CIFAR10/seed5/'
@@ -351,12 +352,13 @@ def main():
     # logits = [0, 0, 0]
     # logits_robust = [0, 0, 0]
     model_num = 2
+    ckpt = args.ckpt
     if args.factors == 'model':
         for i in range(model_num):
             print("Test: " + str(i))
             factor = [args.epsilon, args.depth, args.widen_factor, args.droprate]
             # net = loadmodel(i, factor)
-            net = loadmodel_preactresnte(i, factor)
+            net = loadmodel_preactresnte(i, ckpt, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
             test(writer, net, 'model_name', factor[0], args.AT_method)
