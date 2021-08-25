@@ -3,7 +3,7 @@
 仅测试，没有 rep 表示.
 需要选择测试 model 为 AT 还是 ST，来确定 PGD attack 是否使用
 
-按 label，对所有 test 样本，获取对应的 logits，求均值看分布
+按 label，对所有 test 样本，针对错分类的样本计算 logits，看其分布情况
 '''
 import torch
 import torch.nn as nn
@@ -126,41 +126,6 @@ def seed_everything(seed):
 
 
 def loadmodel(i, factor):
-    # Model
-    # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    ckpt_list = ['model-wideres-epoch76.pt']
-    print('==> Building model..')
-    # path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
-    # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
-    # ST
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/ST' \
-    #        '/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
-    # '/ST-ori/e0.031_depth34_widen10_drop0.0/'
-
-    # Fair ST
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
-
-    # TRADES AT
-    # ckpt = path + 'TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0'
-    # ckpt += 'model-wideres-epoch76.pt'
-
-    # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-
-    # ICML
-    # ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
-    # ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/'
-    # Fair AT
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt += 'model-wideres-epoch76.pt'
-
-    # ckpt += ckpt_list[i]
-
     ckpt = '/data/niuzh/model/cifar10_rst_adv.pt.ckpt'
     checkpoint = torch.load(ckpt)
     net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
@@ -175,68 +140,6 @@ def loadmodel_preactresnte(i, ckpt, AT_method):
     # Model
     # ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
     print('==> Building model..')
-    # AT preactresnet
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR10/seed1/'
-
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    # ICML-21
-    # ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
-    # ckpt_list = ['trade_120_1.0.pt']
-    # ckpt = '../Robust-Fair/cifar10/models-preactresnet/fair1/'
-    # net = create_network().cuda()
-    # Fair-AT
-    # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1-fl1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-
-    # AT with OPT save
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/AT-opt/'
-    # ckpt_list = ['ckpt-epoch75.pt', 'ckpt-epoch76.pt', 'ckpt-epoch100.pt']
-
-    # rm label AT
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/rmlabel_seed2/rmlabel' + str(label) + '/'
-    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-
-    # Fine-Tune model
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune/'
-    # ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
-
-    # FC Fine-Tune model
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune-FC/resum_100/'
-    # ckpt_list = ['ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt', 'ckpt-ft-epoch140.pt']
-
-    # 只在某 label 上，做 AT
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/svlabel_seed1/svlabel_35/'
-    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-
-    # CIFAR 100, TRADES
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR100/'
-    # imagnette
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_Imagnette/kplabel_seed1/percent_1.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_Imagnette/seed1/'
-    # SVHN
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_SVHN/kplabel_seed1/percent_0.01/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed3/'
-
-    # ImageNet 10
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed5/percent_0.05/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/rmlabel_9/seed1/'
-    # ST aug
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_adp_CIFAR10/seed5/'
-    # ST el
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_CIFAR10/seed1/'
-    # Adv aug
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_CIFAR10/seed3/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgd_CIFAR10/seed5/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgdattk_CIFAR10/seed1/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_loss_adp_CIFAR10/seed8/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_augmulti_CIFAR10/seed3/'
-    # ckpt='../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ST_adp_CIFAR10/seed2/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgdattk2_CIFAR10/seed5/'
 
     if AT_method == "ST":
         ckpt_list = ['model-wideres-epoch100.pt']
@@ -301,6 +204,7 @@ def test(writer, net, model_name, epsilon, AT_method):
     output = []
     output_pgd = []
     benign_logits_avg = []
+    wrong_outlabel = []
     with torch.no_grad():
         # for inputs, targets in testloader:
         for batch_idx, (inputs, targets) in enumerate(testloader):
@@ -331,16 +235,33 @@ def test(writer, net, model_name, epsilon, AT_method):
             benign_logits_perlabel = torch.index_select(benign_logits, 0, idx)
             benign_logits_perlabel = (torch.sum(benign_logits_perlabel, dim=0)/len_idx).cpu().numpy()
             benign_logits_avg.append([float('{:.3f}'.format(i)) for i in benign_logits_perlabel])
-
         for x in benign_logits_avg:
-            print(x)
+            print(*x)
+
+        # 统计每个 label 误分类的结果
+        right_idx = (output == target).nonzero().flatten()
+        wrong_idx = (output != target).nonzero().flatten()
+        GT_of_wrong = torch.index_select(target, 0, wrong_idx)
+        output_of_wrong = torch.index_select(output, 0, wrong_idx)
+        for i in range(10):
+            idx = []
+            idx.append((GT_of_wrong == i).nonzero().flatten())
+            idx = torch.cat(idx)
+            len_idx = len(idx)
+            gow = torch.index_select(GT_of_wrong, 0, idx)
+            # 获取关于 label i data 的错误输出，后续进行统计
+            oow = torch.index_select(output_of_wrong, 0, idx).cpu().numpy()
+            # 统计 out 为其他 label 的比例
+            wrong_outlabel.append([float('{:.1f}'.format(oow.tolist().count(i)/len_idx*100)) for i in range(10)])
+        print('\n 对 label i data 误分类样本统计，输出其具体的预测结果：')
+        for x in wrong_outlabel:
+            print(*x)
+
         # adv sample
         tmp = torch.cat(output_pgd[:-1])
         output_pgd = torch.cat((tmp, output_pgd[-1]), dim=0)
         robust_logits = output_pgd.softmax(dim=-1)
         output_pgd = output_pgd.data.max(1)[1]
-
-
 
         # 计算每个类别下的 err
         output = output.cpu().numpy()
@@ -361,7 +282,7 @@ def test(writer, net, model_name, epsilon, AT_method):
             # print(m)
 
     # 输出各 label 下的 acc
-    print('acc_natural_label：')
+    print('\n acc_natural_label：')
     for i in acc_natural_label:
         print('{:.1f}'.format(i))
         # print("%d" % i)
