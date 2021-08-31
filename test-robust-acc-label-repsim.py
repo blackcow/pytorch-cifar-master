@@ -260,9 +260,9 @@ def test(writer, net, model_name, epsilon, AT_method):
         sim_right_35 = torch.matmul(right_rep[0], right_rep[1].T).mean()  # 正确分类的
         sim_wrong_35 = torch.matmul(wrong_rep[0], wrong_rep[1].T).mean()  # 错误分类的
 
-        print("\n 35正确分类样本个数：", len(right_idx[0]), len(right_idx[1]))
-        print("\n 35正确分类样本的距离：{:3f}".format(sim_right_35.cpu().numpy()))
-        print("\n 35误分类样本的距离：{:3f}".format(sim_wrong_35.cpu().numpy()))
+        print("35正确分类样本个数：", len(right_idx[0]), len(right_idx[1]))
+        print("35正确分类样本的相似度:%.3f" % sim_right_35.cpu().numpy())
+        print("35误分类样本的相似度:%.3f" % sim_wrong_35.cpu().numpy())
 
     return None
 
