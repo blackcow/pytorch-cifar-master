@@ -1,6 +1,7 @@
 '''Train CIFAR10 with PyTorch
 load 模型 test 指标，进行 T-SNE 可视化
 可以 load 全部 data，然后可视化
+单独绘制3-5的 data 的 rep
 '''
 # python main-TSNE.py -dataset ImageNet10
 
@@ -153,7 +154,7 @@ def plot_embedding(data, label, title):
         plt.plot(data[i, 0], data[i, 1])
     if not os.path.exists("./img"):
         os.mkdir('./img')
-    img_title = "./img/"+ title + ".png"
+    img_title = "./img/" + title + ".png"
     plt.savefig(img_title, dpi=300)
     plt.show()
     return fig
@@ -167,16 +168,20 @@ def test():
     total = 0
     rep = []
     y = []
+    out = []
+    output_label, output_rep, target_label = [], [], []
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.cuda(), targets.cuda()
             out4, outputs = net(inputs)
             out4 = out4.reshape(len(inputs), -1)
+            # out4 = F.adaptive_avg_pool2d(out4, (1, 1)).squeeze()
             rep.append(out4)
             y.append(targets)
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
+            out.append(predicted)
 
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
@@ -184,20 +189,40 @@ def test():
             # if len(y) > 10:
             #     break
         acc = 100. * correct / total
-        print(acc)
+        # print(acc)
         # T-sne 可视化
-        rep = torch.cat(rep)
-        y = torch.cat(y)
-        rep = rep.cpu().numpy()
-        y = y.cpu().numpy()
+        rep = torch.cat(rep).cpu().numpy()
+        out = torch.cat(out).cpu().numpy()
+        y = torch.cat(y).cpu().numpy()
+
+        # 按 label 排序合并
+        for m in np.unique(y):
+            idx = [i for i, x in enumerate(y) if x == m]
+            output_label.append(out[idx])
+            output_rep.append(rep[idx])
+            target_label.append(y[idx])
+            acc = (out[idx] == y[idx]).sum() / len(y[idx]) * 100
+            print(acc)
+            # acc_robust = (output_pgd_label == target_label).sum() / target_label.size * 100
+        # 找到 3，5 错误分类的 data
+        wrong_3_idx = np.where(output_label[3] != 3)
+        wrong_5_idx = np.where(output_label[5] != 5)
+        # 取出3，5 分错的 data rep 和 label
+        output_rep[3] = output_rep[3][wrong_3_idx]
+        output_rep[5] = output_rep[5][wrong_5_idx]
+        target_label[3] = target_label[3][wrong_3_idx]
+        target_label[5] = target_label[5][wrong_5_idx]
+        # 剔除 3，5 正确的重新合并
+        output_rep = np.concatenate(output_rep)
+        target_label = np.concatenate(target_label)
         # tsne = TSNE(n_components=2, perplexity=50, early_exaggeration=100, init='pca', random_state=0)
         tsne = TSNE(n_components=2, init='pca', random_state=0)
         t0 = time()
 
 
-        result = tsne.fit_transform(rep)
+        result = tsne.fit_transform(output_rep)
         # fig = plot_embedding(result, y, 't-SNE embedding of the CIFAR-10 (time %.2fs)' % (time() - t0))
-        fig = plot_embedding(result, y, title)
+        fig = plot_embedding(result, target_label, title)
     # Save checkpoint.
 
     return acc
