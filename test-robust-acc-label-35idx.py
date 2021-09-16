@@ -244,6 +244,24 @@ def test(writer, net, model_name, epsilon, AT_method):
         print()
     return wrong_idx3, wrong_idx5
 
+def count(wrong_idx_all):
+    y = np.concatenate([wrong_idx_all[0], wrong_idx_all[1], wrong_idx_all[2]], axis=0)
+    y = sorted(y)
+    # print(y)
+    # 统计出现的元素有哪些
+    unique_data = np.unique(y)
+    # print(unique_data)
+
+    # 统计某个元素出现的次数
+    resdata = []
+    count = []
+    for ii in unique_data:
+        resdata.append(y.count(ii))
+
+    for m in np.unique(resdata):
+        count.append(resdata.count(m))
+    print(np.unique(resdata))
+    print(count)
 
 def main():
     start = time()
@@ -275,26 +293,12 @@ def main():
     # 统计出现次数
     # from collections import Counter
     # Counter([1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4])
-
-    y = np.concatenate([wrong_idx3_all[0], wrong_idx3_all[1], wrong_idx3_all[2]], axis=0)
-    y = sorted(y)
-    # print(y)
-    # 统计出现的元素有哪些
-    unique_data = np.unique(y)
-    # print(unique_data)
-
-    # 统计某个元素出现的次数
-    resdata = []
-    count = []
-    for ii in unique_data:
-        resdata.append(y.count(ii))
-
-    for m in np.unique(resdata):
-        count.append(resdata.count(m))
-    print(np.unique(resdata))
-    print(count)
-
+    print('For 3 label:')
+    count(wrong_idx3_all)
+    print('For 5 label:')
+    count(wrong_idx5_all)
     print()
+
     # sum of the dis of the center rep
     # for m in range(model_num):
     #     print('%.2f' % logits[m])
