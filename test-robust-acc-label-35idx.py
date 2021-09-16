@@ -1,5 +1,5 @@
 '''Train CIFAR10 with PyTorch
-建议使用这个来测试最终效果
+针对 3，5 data，找到误分类的 idx，重复情况如何
 测试 benign acc 和 robust acc（在各个 label 下）,不受限于各 label 的 data 数量
 仅测试，没有 rep 表示.
 需要选择测试 model 为 AT 还是 ST，来确定 PGD attack 是否使用
@@ -124,127 +124,24 @@ def seed_everything(seed):
     torch.backends.cudnn.deterministic = True
 
 
-def loadmodel(i, factor):
-    # Model
-    # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    ckpt_list = ['model-wideres-epoch76.pt']
-    print('==> Building model..')
-    # path = '../Fair-AT/model-cifar-wideResNet/wideresnet/'
-    # ckpt = '/hot-data/niuzh/Mycode/pytorch-cifar-master/checkpoint/model_cifar_wrn.pt'
-    # ST
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/ST' \
-    #        '/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet' \
-    # '/ST-ori/e0.031_depth34_widen10_drop0.0/'
-
-    # Fair ST
-    # ckpt = '/hot-data/niuzh/Mycode/Fair-AT/model-cifar-wideResNet/wideresnet/' \
-    #        'ST_fair_v1/e0.031_depth34_widen10_drop0.0/'
-
-    # TRADES AT
-    # ckpt = path + 'TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0'
-    # ckpt += 'model-wideres-epoch76.pt'
-
-    # ckpt = path + 'ST_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = path + 'TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-
-    # ICML
-    # ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
-    # ckpt = '../Robust-Fair/cifar10/models-wideresnet/fair1/'
-    # Fair AT
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/wideresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt += 'model-wideres-epoch76.pt'
-
-    # ckpt += ckpt_list[i]
-
-    ckpt = '/data/niuzh/model/cifar10_rst_adv.pt.ckpt'
-    checkpoint = torch.load(ckpt)
-    net = nn.DataParallel(WideResNet(depth=factor[1], widen_factor=factor[2], dropRate=factor[3])).cuda()
-    net.load_state_dict(checkpoint['state_dict'])
-    # net.load_state_dict(checkpoint)
-    net.eval()
-    print(ckpt)
-    return net
-
-
 def loadmodel_preactresnte(i, ckpt, factor):
-    # Model
-    # ckpt_list = ['model-wideres-epoch10.pt', 'model-wideres-epoch11.pt', 'model-wideres-epoch12.pt']
     print('==> Building model..')
     # AT preactresnet
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR10/seed1/'
-
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    # ICML-21
-    # ckpt_list = ['trade_10_1.0.pt', 'trade_60_1.0.pt', 'trade_120_1.0.pt']
-    # ckpt_list = ['trade_120_1.0.pt']
-    # ckpt = '../Robust-Fair/cifar10/models-preactresnet/fair1/'
-    # net = create_network().cuda()
-    # Fair-AT
-    # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_fair_v1a_T0.1_L1-fl1/e0.031_depth34_widen10_drop0.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/e0.031_depth34_widen10_drop0.0/'
-    # ckpt_list = ['model-wideres-epoch75.pt', 'model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-
-    # AT with OPT save
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/AT-opt/'
-    # ckpt_list = ['ckpt-epoch75.pt', 'ckpt-epoch76.pt', 'ckpt-epoch100.pt']
-
-    # rm label AT
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/rmlabel_seed2/rmlabel' + str(label) + '/'
+    ckptlist =['../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_li2_CIFAR10/seed4/model-wideres-epoch100.pt',
+           '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_label_smooth_CIFAR10/seed1/model-wideres-epoch100.pt',
+           '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt'
+           ]
+    # ckptlist = ['../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt',
+    # '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt',
+    # '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt']
+    ckpt = ckptlist[i]
     # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-
-    # Fine-Tune model
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune/'
-    # ckpt_list = ['ckpt-ft-epoch76.pt', 'ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt']
-
-    # FC Fine-Tune model
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/fine-tune-FC/resum_100/'
-    # ckpt_list = ['ckpt-ft-epoch100.pt', 'ckpt-ft-epoch120.pt', 'ckpt-ft-epoch140.pt']
-
-    # 只在某 label 上，做 AT
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES/svlabel_seed1/svlabel_35/'
-    # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
-
-    # CIFAR 100, TRADES
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_CIFAR100/'
-    # imagnette
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_Imagnette/kplabel_seed1/percent_1.0/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_Imagnette/seed1/'
-    # SVHN
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_SVHN/kplabel_seed1/percent_0.01/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_SVHN/seed3/'
-
-    # ImageNet 10
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_ImageNet10/kplabel_seed5/percent_0.05/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/rmlabel_9/seed1/'
-    # ST aug
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_adp_CIFAR10/seed5/'
-    # ST el
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_CIFAR10/seed1/'
-    # Adv aug
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_CIFAR10/seed3/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgd_CIFAR10/seed5/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgdattk_CIFAR10/seed1/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_loss_adp_CIFAR10/seed8/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_augmulti_CIFAR10/seed3/'
-    # ckpt='../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ST_adp_CIFAR10/seed2/'
-    # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_aug_pgdattk2_CIFAR10/seed5/'
-    ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
 
     if args.dataset == 'CIFAR10' or 'STL10' or 'Imagnette' or 'SVHN' or 'ImageNet10':
         num_classes = 10
     elif args.dataset == 'CIFAR100':
         num_classes = 100
     net = nn.DataParallel(create_network(num_classes)).cuda()
-    ckpt += ckpt_list[i]
-    # print(net)
     net.load_state_dict(torch.load(ckpt))
 
     # for AT-opt & Fine-tune model
@@ -256,12 +153,13 @@ def loadmodel_preactresnte(i, ckpt, factor):
 
 # PGD Attack
 def _pgd_whitebox(model, X, y, epsilon, AT_method, num_steps=args.num_steps, step_size=args.step_size, ):
-    rep, out = model(X)
-    N, C, H, W = rep.size()
-    rep = rep.reshape([N, -1])
-    out = out.data.max(1)[1]
+    ori_rep, out_logit = model(X)
+    # N, C, H, W = rep.size()
+    # rep = rep.reshape([N, -1])
+    # out = out_ori.data.max(1)[1]
     if AT_method == 'ST':
-        return out, rep, out, rep
+        # logits = out_ori.softmax(dim=-1)
+        return out_logit, ori_rep
     elif AT_method == 'AT':
         X_pgd = Variable(X.data, requires_grad=True)
         if args.random:
@@ -279,11 +177,9 @@ def _pgd_whitebox(model, X, y, epsilon, AT_method, num_steps=args.num_steps, ste
             eta = torch.clamp(X_pgd.data - X.data, -epsilon, epsilon)
             X_pgd = Variable(X.data + eta, requires_grad=True)
             X_pgd = Variable(torch.clamp(X_pgd, 0, 1.0), requires_grad=True)
-        rep_pgd, out_pgd = model(X_pgd)
-        out_pgd = out_pgd.data.max(1)[1]
-
-        rep_pgd = rep_pgd.reshape([N, -1])
-        return out, rep, out_pgd, rep_pgd
+        pgd_rep, out_pgd = model(X_pgd)
+        # out_pgd = out_pgd.data.max(1)[1]
+        return out_logit, out_pgd
 
 
 # input: tensorboard, model, model_name
@@ -291,56 +187,62 @@ def test(writer, net, model_name, epsilon, AT_method):
     global best_acc
     global best_epoch
 
-    acc_natural_label = []
-    acc_robust_label = []
     target = []
-    output = []
-    output_robust = []
+    output_rep = []
+    output_logit = []
+
     with torch.no_grad():
         # for inputs, targets in testloader:
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             X, y = Variable(inputs, requires_grad=True), Variable(targets)
-            out, rep, out_pgd, rep_pgd = _pgd_whitebox(net, X, y, epsilon=epsilon, AT_method=AT_method)
-            output.append(out)
-            output_robust.append(out_pgd)
+            out_logit, ori_rep = _pgd_whitebox(net, X, y, epsilon=epsilon, AT_method=AT_method)
+            output_rep.append(ori_rep)
+            output_logit.append(out_logit)
             target.append(y)
 
-        # 计算每个类别下的 err
-        output_tmp = torch.stack(output[:-1])
-        output_pgd_tmp = torch.stack(output_robust[:-1])
+        # 所有 y，最后一行可能不满一列的长度，单独 concat
         target_tmp = torch.stack(target[:-1])
-        # 最后一行可能不满一列的长度，单独 concat
-        output = torch.cat((output_tmp.reshape(-1), output[-1]), dim=0).cpu().numpy()
-        output_pgd = torch.cat((output_pgd_tmp.reshape(-1), output_robust[-1]), dim=0).cpu().numpy()
-        target = torch.cat((target_tmp.reshape(-1), target[-1]), dim=0).cpu().numpy()
-        avg_acc = (output == target).sum() / target.size * 100
-        avg_acc_robust = (output_pgd == target).sum() / target.size * 100
-        # 获取每个 label 的 out 和 target
-        for m in np.unique(target):
-            idx = [i for i, x in enumerate(target) if x == m]
-            output_label = output[idx]
-            output_pgd_label = output_pgd[idx]
-            target_label = target[idx]
-            acc = (output_label == target_label).sum() / target_label.size * 100
-            acc_robust = (output_pgd_label == target_label).sum() / target_label.size * 100
-            acc_natural_label.append(acc)
-            acc_robust_label.append(acc_robust)
-            # print(m)
+        target = torch.cat((target_tmp.reshape(-1), target[-1]), dim=0)
 
-    # 输出各 label 下的 acc
-    print('acc_natural_label：')
-    for i in acc_natural_label:
-        print('{:.1f}'.format(i))
-        # print("%d" % i)
-    print('Avg_acc: {:.1f}'.format(avg_acc))
+        # 统计得到 rep 和输出的 label
+        tmp = torch.cat(output_rep[:-1])
+        output_rep = torch.cat((tmp, output_rep[-1]), dim=0)
+        output_rep = F.adaptive_avg_pool2d(output_rep, (1, 1)).squeeze()
+        output_rep = F.normalize(output_rep, dim=1)  # rep 合并后归一化
+        tmp = torch.cat(output_logit[:-1])
+        output_logit = torch.cat((tmp, output_logit[-1]), dim=0)
+        output = output_logit.data.max(1)[1]
 
-    print('acc_robust_label：')
-    for i in acc_robust_label:
-        print('{:.1f}'.format(i))
-    print('Avg_acc_robust: {:.1f}'.format(avg_acc_robust))
-    return None
+        # 分别统计 3,5 label 的 logits
+        out_rep_35 = []
+        idx_35 = []
+        out_35 = []
+        target_35 = []
+        for i in [3, 5]:
+            idx = (target == i).nonzero().flatten()
+            idx_35.append(idx)
+            # len_idx = len(idx)
+            out_rep_35.append(torch.index_select(output_rep, 0, idx))  # 3，5 data output 对应的 rep
+            out_35.append(torch.index_select(output, 0, idx))  # 3,5 data output 的 label
+            target_35.append(torch.index_select(target, 0, idx))  # 3,5 data output 的 GT label
+            # out_35
+        #     benign_logits_perlabel = (torch.sum(benign_logits_perlabel, dim=0)/len_idx).cpu().numpy()
+        #     benign_logits_avg.append([float('{:.3f}'.format(i)) for i in benign_logits_perlabel])
+        # for x in benign_logits_avg:
+        #     print(*x)
+
+        # 统计每个 label 正、误分类的结果
+        # 统计 3，5 误分类的 idx
+        right_idx, wrong_idx = [], []
+        right_rep, wrong_rep = [], []
+
+        wrong_idx3 = (out_35[0] != target_35[0]).nonzero().flatten().cpu().numpy()
+        wrong_idx5 = (out_35[1] != target_35[1]).nonzero().flatten().cpu().numpy()
+
+        print()
+    return wrong_idx3, wrong_idx5
 
 
 def main():
@@ -352,8 +254,10 @@ def main():
     print('factors:', args.factors)
     # logits = [0, 0, 0]
     # logits_robust = [0, 0, 0]
-    model_num = 2
+    model_num = 3
     ckpt = args.ckpt
+    wrong_idx3_all = []
+    wrong_idx5_all = []
     if args.factors == 'model':
         for i in range(model_num):
             print("Test: " + str(i))
@@ -362,9 +266,35 @@ def main():
             net = loadmodel_preactresnte(i, ckpt, factor)
             # test robust fair model
             # net = loadmodel_robustfair(i, factor)
-            test(writer, net, 'model_name', factor[0], args.AT_method)
+            wrong_idx3, wrong_idx5 = test(writer, net, 'model_name', factor[0], args.AT_method)
+            wrong_idx3_all.append(wrong_idx3)
+            wrong_idx5_all.append(wrong_idx5)
     else:
         raise Exception('this should never happen')
+
+    # 统计出现次数
+    # from collections import Counter
+    # Counter([1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4])
+
+    y = np.concatenate([wrong_idx3_all[0], wrong_idx3_all[1], wrong_idx3_all[2]], axis=0)
+    y = sorted(y)
+    # print(y)
+    # 统计出现的元素有哪些
+    unique_data = np.unique(y)
+    # print(unique_data)
+
+    # 统计某个元素出现的次数
+    resdata = []
+    count = []
+    for ii in unique_data:
+        resdata.append(y.count(ii))
+
+    for m in np.unique(resdata):
+        count.append(resdata.count(m))
+    print(np.unique(resdata))
+    print(count)
+
+    print()
     # sum of the dis of the center rep
     # for m in range(model_num):
     #     print('%.2f' % logits[m])
