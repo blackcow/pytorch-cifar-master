@@ -273,7 +273,7 @@ def main():
     print('factors:', args.factors)
     # logits = [0, 0, 0]
     # logits_robust = [0, 0, 0]
-    model_num = 3
+    model_num = 2
     ckpt = args.ckpt
     wrong_idx3_all = []
     wrong_idx5_all = []
