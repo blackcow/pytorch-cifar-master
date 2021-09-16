@@ -260,6 +260,7 @@ def count(wrong_idx_all):
 
     for m in np.unique(resdata):
         count.append(resdata.count(m))
+    print('len:', len(y))
     print(np.unique(resdata))
     print(count)
 
