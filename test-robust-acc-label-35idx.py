@@ -127,12 +127,12 @@ def seed_everything(seed):
 def loadmodel_preactresnte(i, ckpt, factor):
     print('==> Building model..')
     # AT preactresnet
-    ckptlist =['../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_li2_CIFAR10/seed4/model-wideres-epoch100.pt',
-    #        '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_label_smooth_CIFAR10/seed1/model-wideres-epoch100.pt',
-           '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt'
-           ]
-    # ckptlist = ['../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt',
-    # '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed2/model-wideres-epoch100.pt']
+    # ckptlist =['../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_li2_CIFAR10/seed4/model-wideres-epoch100.pt',
+    # #        '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_label_smooth_CIFAR10/seed1/model-wideres-epoch100.pt',
+    #        '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt'
+    #        ]
+    ckptlist = ['../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt',
+    '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed2/model-wideres-epoch100.pt']
     # '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed3/model-wideres-epoch100.pt']
     ckpt = ckptlist[i]
     # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
@@ -245,7 +245,8 @@ def test(writer, net, model_name, epsilon, AT_method):
     return wrong_idx3, wrong_idx5
 
 def count(wrong_idx_all):
-    y = np.concatenate([wrong_idx_all[0], wrong_idx_all[1], wrong_idx_all[2]], axis=0)
+    y = np.concatenate([wrong_idx_all[0], wrong_idx_all[1]], axis=0)
+    # y = np.concatenate([wrong_idx_all[0], wrong_idx_all[1], wrong_idx_all[2]], axis=0)
     y = sorted(y)
     # print(y)
     # 统计出现的元素有哪些
