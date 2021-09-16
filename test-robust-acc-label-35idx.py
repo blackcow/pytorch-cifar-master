@@ -128,12 +128,12 @@ def loadmodel_preactresnte(i, ckpt, factor):
     print('==> Building model..')
     # AT preactresnet
     ckptlist =['../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_li2_CIFAR10/seed4/model-wideres-epoch100.pt',
+    #        '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_label_smooth_CIFAR10/seed1/model-wideres-epoch100.pt',
            '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt'
            ]
     # ckptlist = ['../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt',
-    # '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed2/model-wideres-epoch100.pt'
-    # '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed3/model-wideres-epoch100.pt'
-    # ]
+    # '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed2/model-wideres-epoch100.pt']
+    # '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed3/model-wideres-epoch100.pt']
     ckpt = ckptlist[i]
     # ckpt_list = ['model-wideres-epoch76.pt', 'model-wideres-epoch100.pt']
 
