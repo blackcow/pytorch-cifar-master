@@ -2,7 +2,7 @@
 load 模型 test 指标，进行 T-SNE 可视化
 可以 load 全部 data，然后可视化
 '''
-# python main-TSNE.py -dataset ImageNet10
+# python main-TSNE.py -dataset CIFAR10 --ckpt --title
 
 import torch
 import torch.nn as nn
@@ -40,6 +40,11 @@ parser.add_argument('--resume', '-r', action='store_true', help='resume from che
 parser.add_argument('--dataset', default='CIFAR10', choices=['CIFAR10', 'CIFAR100', 'STL10', 'Imagnette', 'SVHN', 'ImageNet10'], help='train model on dataset')
 parser.add_argument('--test-batch-size', type=int, default=100, metavar='N',
                     help='input batch size for testing (default: 128)')
+parser.add_argument('--ckpt', type=str, default='../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt',
+                    help='model path')
+parser.add_argument('--title', type=str, default='ST_CIFAR10_seed1',
+                    help='title of save img')
+
 args = parser.parse_args()
 print(args)
 
@@ -110,7 +115,7 @@ print('==> Building model..')
 # ST CIFAR10 label smooth
 # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_label_smooth_CIFAR10/seed4/model-wideres-epoch100.pt'
 # ST
-ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt'
+# ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wideres-epoch100.pt'
 #ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST/rmlabel_1/percent_0.0/model-wideres-epoch100.pt'
 #ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_el_li2_CIFAR10/seed5/model-wideres-epoch100.pt'
 #ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_label_smooth35_CIFAR10/seed5/model-wideres-epoch100.pt'
@@ -122,11 +127,14 @@ ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/ST_CIFAR10/seed1/model-wi
 # AT ImageNet-10
 # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed1/model-wideres-epoch76.pt'
 # ckpt = '../Fair-AT/model-cifar-wideResNet/preactresnet/TRADES_ImageNet10/seed2/model-wideres-epoch76.pt'
-title = 'ST_CIFAR10_seed1'
+# title = 'ST_CIFAR10_seed1'
 # net = WideResNet().cuda()
 # net = nn.DataParallel(WideResNet()).cuda()
 # net = nn.DataParallel(create_network()).cuda()
 
+
+title = args.title
+ckpt = args.ckpt
 if args.dataset == 'CIFAR10' or 'STL10' or 'Imagnette' or 'SVHN' or 'ImageNet10':
     num_classes = 10
 elif args.dataset == 'CIFAR100':
